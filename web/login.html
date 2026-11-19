@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="color-scheme" content="light dark">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="description" content="Unlock your Cairn workspace.">
+  <title>Unlock · Cairn</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/login.css">
+  <script src="/login.js"></script>
+</head>
+<body>
+  <main class="login-shell">
+    <section class="login-card" aria-labelledby="login-title">
+      <aside class="brand-panel" aria-hidden="true">
+        <div class="brand-mark">
+          <svg viewBox="0 0 44 44" class="cairn-mark">
+            <path d="M22 5.5 33 15l-4.4 3.6H15.4L11 15z" class="stone stone-1"/>
+            <path d="M22 14 35 24l-5.2 4.2H14.2L9 24z" class="stone stone-2"/>
+            <path d="M22 23 37 33l-6.2 5H13.2L7 33z" class="stone stone-3"/>
+          </svg>
+          <span class="brand-word">Cairn</span>
+        </div>
+
+        <div class="brand-copy">
+          <p class="brand-eyebrow">Shared memory for coding agents</p>
+          <h2>Every decision,<br>kept where the<br>next agent looks.</h2>
+          <p class="brand-body">Decisions, changes, and handoffs stay as plain Markdown in a local graph. No cloud account. No transcript archaeology.</p>
+        </div>
+        <ul class="brand-points">
+          <li><span class="point-dot"></span>Local-first vault you own</li>
+          <li><span class="point-dot"></span>One password per workspace</li>
+          <li><span class="point-dot"></span>No telemetry or outbound calls</li>
+        </ul>
+        <p class="brand-foot">Your memory stays on this machine.</p>
+      </aside>
+
+      <div class="form-panel">
+        <div class="mobile-brand">
+          <svg viewBox="0 0 44 44" class="cairn-mark" aria-hidden="true">
+            <path d="M22 5.5 33 15l-4.4 3.6H15.4L11 15z" class="stone stone-1"/>
+            <path d="M22 14 35 24l-5.2 4.2H14.2L9 24z" class="stone stone-2"/>
+            <path d="M22 23 37 33l-6.2 5H13.2L7 33z" class="stone stone-3"/>
+          </svg>
+          <span class="brand-word">Cairn</span>
+        </div>
+
+        <div id="login-view">
+          <div class="form-head">
+            <p class="form-eyebrow">Protected workspace</p>
+            <h1 id="login-title">Unlock Cairn</h1>
+            <p class="form-sub" id="login-sub">Enter the workspace password printed by <code>cairn start</code>.</p>
+          </div>
+
+          <form id="login-form" class="login-form" novalidate>
+            <label class="field" for="password">
+              <span class="field-label">Workspace password</span>
+              <span class="input-wrap">
+                <svg class="input-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 10V7a5 5 0 0 1 10 0v3"/><rect x="4.5" y="10" width="15" height="10.5" rx="2.5"/><path d="M12 14.5v2.8"/></svg>
+                <input id="password" name="password" type="password" inputmode="text" autocomplete="current-password" spellcheck="false" autocapitalize="none" autofocus required aria-describedby="login-error">
+                <button class="reveal" id="reveal" type="button" aria-label="Show password" aria-pressed="false">
+                  <svg class="icon-eye" viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 12S6 5.8 12 5.8 21.5 12 21.5 12 18 18.2 12 18.2 2.5 12 2.5 12Z"/><circle cx="12" cy="12" r="3.2"/></svg>
+                  <svg class="icon-eye-off" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3l18 18"/><path d="M10.6 5.9A9.8 9.8 0 0 1 12 5.8c6 0 9.5 6.2 9.5 6.2a17 17 0 0 1-2.6 3.4"/><path d="M6.3 7.5A17.6 17.6 0 0 0 2.5 12S6 18.2 12 18.2a9.6 9.6 0 0 0 4.1-.9"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/></svg>
+                </button>
+              </span>
+            </label>
+
+            <p class="caps-hint" id="caps-hint" hidden>Caps Lock is on</p>
+            <p class="form-error" id="login-error" role="alert" aria-live="polite" hidden></p>
+
+            <button class="submit" id="submit" type="submit">
+              <span class="submit-label">Unlock workspace</span>
+              <svg class="submit-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h13"/><path d="m13 6 6 6-6 6"/></svg>
+            </button>
+          </form>
+
+          <p class="form-help">Lost it? Run <code>cairn auth reset</code> in the vault's terminal. Existing browser sessions are signed out.</p>
+        </div>
+
+        <div id="must-change-view" hidden>
+          <div class="form-head">
+            <p class="form-eyebrow">First login</p>
+            <h1 id="must-change-title">Set your password</h1>
+            <p class="form-sub">This is the first login with the generated password. Choose a permanent workspace password to continue.</p>
+          </div>
+
+          <form id="must-change-form" class="login-form" novalidate>
+            <label class="field" for="current-password">
+              <span class="field-label">Generated password (from <code>cairn start</code>)</span>
+              <span class="input-wrap">
+                <svg class="input-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 10V7a5 5 0 0 1 10 0v3"/><rect x="4.5" y="10" width="15" height="10.5" rx="2.5"/><path d="M12 14.5v2.8"/></svg>
+                <input id="current-password" name="current" type="password" inputmode="text" autocomplete="current-password" spellcheck="false" autocapitalize="none" required aria-describedby="must-change-error">
+              </span>
+            </label>
+
+            <label class="field" for="new-password">
+              <span class="field-label">New workspace password</span>
+              <span class="input-wrap">
+                <svg class="input-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 10V7a5 5 0 0 1 10 0v3"/><rect x="4.5" y="10" width="15" height="10.5" rx="2.5"/><path d="M12 14.5v2.8"/></svg>
+                <input id="new-password" name="next" type="password" inputmode="text" autocomplete="new-password" spellcheck="false" autocapitalize="none" minlength="12" required aria-describedby="must-change-error">
+                <button class="reveal" id="reveal-new" type="button" aria-label="Show new password" aria-pressed="false">
+                  <svg class="icon-eye" viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 12S6 5.8 12 5.8 21.5 12 21.5 12 18 18.2 12 18.2 2.5 12 2.5 12Z"/><circle cx="12" cy="12" r="3.2"/></svg>
+                  <svg class="icon-eye-off" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3l18 18"/><path d="M10.6 5.9A9.8 9.8 0 0 1 12 5.8c6 0 9.5 6.2 9.5 6.2a17 17 0 0 1-2.6 3.4"/><path d="M6.3 7.5A17.6 17.6 0 0 0 2.5 12S6 18.2 12 18.2a9.6 9.6 0 0 0 4.1-.9"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/></svg>
+                </button>
+              </span>
+            </label>
+
+            <label class="field" for="confirm-password">
+              <span class="field-label">Confirm new password</span>
+              <span class="input-wrap">
+                <svg class="input-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 10V7a5 5 0 0 1 10 0v3"/><rect x="4.5" y="10" width="15" height="10.5" rx="2.5"/><path d="M12 14.5v2.8"/></svg>
+                <input id="confirm-password" name="confirm" type="password" inputmode="text" autocomplete="new-password" spellcheck="false" autocapitalize="none" minlength="12" required aria-describedby="must-change-error">
+              </span>
+            </label>
+
+            <p class="form-hint">Use 12+ characters. A mix of letters, numbers, and symbols is best.</p>
+            <p class="form-error" id="must-change-error" role="alert" aria-live="polite" hidden></p>
+
+            <button class="submit" id="must-change-submit" type="submit">
+              <span class="submit-label">Save password &amp; open workspace</span>
+              <svg class="submit-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h13"/><path d="m13 6 6 6-6 6"/></svg>
+            </button>
+          </form>
+
+          <p class="form-help">Only one login with the generated password is allowed. It stops working once you set a new one.</p>
+        </div>
+
+        <div class="form-foot">
+          <span class="status-dot" aria-hidden="true"></span>
+          <span id="server-status">Checking the workspace…</span>
+        </div>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

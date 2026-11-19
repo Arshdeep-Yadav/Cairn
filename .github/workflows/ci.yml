@@ -1,0 +1,48 @@
+# Cross-platform CI matrix. Runs the full test suite under each supported
+# Node + platform combination, so a Linux/macOS/Windows or x86/arm64 regression
+# is caught by CI rather than by hand.
+name: ci
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        node: [20, 22, 24]
+        arch: [x64, arm64]
+        exclude:
+          # GitHub-hosted runners only offer arm64 on Linux and macOS.
+          - os: windows-latest
+            arch: arm64
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Node ${{ matrix.node }} (${{ matrix.arch }})
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          architecture: ${{ matrix.arch }}
+      - run: npm ci
+      - run: npm test
+      - run: npm audit --omit=dev
+        continue-on-error: true
+
+  portability:
+    # Confirms the published package contains no native binaries and that the
+    # runtime dependency tree is pure JavaScript on every platform.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - run: npm ci
+      - run: npm run build
+      - name: No native binaries shipped
+        run: node scripts/check-portable.mjs

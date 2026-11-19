@@ -1,0 +1,22 @@
+services:
+  cairn:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: cairn:latest
+    container_name: cairn
+    restart: unless-stopped
+    ports:
+      - "4242:4242"
+    environment:
+      - NODE_ENV=production
+      - CAIRN_ALLOW_REMOTE=1
+      - CAIRN_ALLOWED_HOSTS=${CAIRN_ALLOWED_HOSTS:-localhost,127.0.0.1}
+      - CAIRN_PASSWORD=${CAIRN_PASSWORD:-}
+      - CAIRN_SECURE_COOKIE=${CAIRN_SECURE_COOKIE:-0}
+    volumes:
+      - cairn_data:/data
+
+volumes:
+  cairn_data:
+    name: cairn_data

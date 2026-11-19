@@ -1,0 +1,46 @@
+# Production deployment with Caddy reverse proxy for automated HTTPS
+services:
+  cairn:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: cairn:latest
+    container_name: cairn-app
+    restart: unless-stopped
+    expose:
+      - "4242"
+    environment:
+      - NODE_ENV=production
+      - CAIRN_ALLOW_REMOTE=1
+      - CAIRN_ALLOWED_HOSTS=${DOMAIN:-localhost}
+      - CAIRN_SECURE_COOKIE=1
+      - CAIRN_PASSWORD=${CAIRN_PASSWORD:-}
+    volumes:
+      - cairn_data:/data
+
+  caddy:
+    image: caddy:2-alpine
+    container_name: cairn-proxy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      - DOMAIN=${DOMAIN:-localhost}
+    command: >
+      caddy reverse-proxy
+      --from ${DOMAIN:-localhost}
+      --to cairn:4242
+    volumes:
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - cairn
+
+volumes:
+  cairn_data:
+    name: cairn_data
+  caddy_data:
+    name: caddy_data
+  caddy_config:
+    name: caddy_config

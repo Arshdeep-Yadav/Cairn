@@ -1,0 +1,67 @@
+{
+  "name": "cairn-memory",
+  "version": "0.1.0",
+  "description": "Shared graph memory for coding agents. An MCP server, capture hooks, and a local knowledge workspace.",
+  "type": "module",
+  "bin": {
+    "cairn": "dist/cli/index.js"
+  },
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "web",
+    "docs",
+    "rules",
+    "skills",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "clean": "node -e \"fs.rmSync('dist', { recursive: true, force: true })\"",
+    "build": "npm run clean && tsc -p tsconfig.json",
+    "dev": "tsx src/cli/index.ts",
+    "start": "node dist/cli/index.js",
+    "mcp": "node dist/cli/index.js mcp",
+    "ui": "node dist/cli/index.js ui",
+    "test": "npm run build && vitest run",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "check:portable": "node scripts/check-portable.mjs",
+    "prepack": "npm run build && node scripts/check-portable.mjs",
+    "prepublishOnly": "npm run build && npm test && node scripts/check-portable.mjs"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Arshdeep-Yadav/Cairn.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Arshdeep-Yadav/Cairn/issues"
+  },
+  "homepage": "https://github.com/Arshdeep-Yadav/Cairn#readme",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.32.2",
+    "yaml": "^2.8.1",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "tsx": "^4.20.0",
+    "typescript": "^5.9.0",
+    "vitest": "^5.1.1"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "agent-memory",
+    "knowledge-graph",
+    "ai-agents",
+    "coding-agents"
+  ],
+  "license": "MIT",
+  "allowScripts": {
+    "esbuild@0.28.2": true
+  }
+}

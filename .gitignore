@@ -1,0 +1,20 @@
+node_modules/
+dist/
+coverage/
+.cairn/
+*.log
+.DS_Store
+Thumbs.db
+
+# Machine-specific client wiring & agent configs
+.mcp.json
+.claude/settings.json
+.cursor/
+.agents/
+.vscode/
+
+# Secrets & local environment files
+.env
+.env.*
+*.env
+*.local

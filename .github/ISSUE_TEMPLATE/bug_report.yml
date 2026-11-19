@@ -1,0 +1,47 @@
+name: Bug Report
+description: Create a report to help us improve Cairn
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: Thank you for reporting a bug. Please ensure no secrets or sensitive vault tokens are included in your report.
+  - type: input
+    id: version
+    attributes:
+      label: Cairn Version
+      description: What version of Cairn are you running? (Run `cairn --version`)
+      placeholder: e.g. 0.1.0
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: OS & Node.js Version
+      description: What OS and Node.js version are you using?
+      placeholder: e.g. Ubuntu 24.04, Node v22.11.0
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: Bug Description
+      description: A clear and concise description of what the bug is.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to Reproduce
+      description: Steps to reproduce the behavior.
+      placeholder: |
+        1. Run `cairn start`
+        2. Execute ...
+        3. See error ...
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs / Error Output
+      description: Paste relevant terminal logs or console outputs here.
+      render: shell
