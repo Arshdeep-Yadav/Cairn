@@ -14,20 +14,24 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
+        # Each runner label pins its own architecture. Do NOT use setup-node's
+        # `architecture` input to request a foreign arch: it only selects which
+        # Node *binary* to download, so pairing ubuntu-latest (x64) with arm64
+        # installs an arm64 ELF that cannot exec on the x64 runner and `npm ci`
+        # dies with "Syntax error: word unexpected".
+        os:
+          - ubuntu-latest      # Linux x64
+          - ubuntu-24.04-arm   # Linux arm64 (native)
+          - macos-latest       # macOS arm64 (native)
+          - macos-15-intel     # macOS x64 (native Intel)
+          - windows-latest     # Windows x64
         node: [20, 22, 24]
-        arch: [x64, arm64]
-        exclude:
-          # GitHub-hosted runners only offer arm64 on Linux and macOS.
-          - os: windows-latest
-            arch: arm64
     steps:
       - uses: actions/checkout@v4
-      - name: Setup Node ${{ matrix.node }} (${{ matrix.arch }})
+      - name: Setup Node ${{ matrix.node }}
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node }}
-          architecture: ${{ matrix.arch }}
       - run: npm ci
       - run: npm test
       - run: npm audit --omit=dev
