@@ -9,6 +9,8 @@ on:
 jobs:
   docker:
     runs-on: ubuntu-latest
+    # Fail fast instead of hanging into GitHub's 6-hour job ceiling.
+    timeout-minutes: 60
     permissions:
       contents: read
       packages: write

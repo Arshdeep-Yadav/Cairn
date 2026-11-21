@@ -4,7 +4,11 @@
 # ==============================================================================
 
 # --- Stage 1: Build & Package ---
-FROM node:22-alpine AS builder
+# Pin the builder to the native build platform. The build only produces portable
+# JavaScript (verified by check:portable), so compiling once on the native arch
+# avoids running npm/tsc under QEMU emulation for the arm64 image — which can
+# otherwise stall the multi-arch build for hours.
+FROM --platform=$BUILDPLATFORM node:22-alpine AS builder
 
 WORKDIR /app
 
