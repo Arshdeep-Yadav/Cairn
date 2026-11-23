@@ -60,12 +60,14 @@ curl -fsSL https://raw.githubusercontent.com/Arshdeep-Yadav/Cairn/main/install.s
 irm https://raw.githubusercontent.com/Arshdeep-Yadav/Cairn/main/install.ps1 | iex
 ```
 
-Prefer npm, or want to try it without a global install? Use the GitHub package spec:
+npm 12 blocks remote and git package specs by default, so the installer builds a
+local tarball instead of relying on `npx cairn` or a `github:` spec. If you already
+have a checkout, the equivalent is:
 
 ```bash
-npm install -g github:Arshdeep-Yadav/Cairn
-# or, one command with no install:
-npx --yes --package github:Arshdeep-Yadav/Cairn cairn --help
+npm ci
+npm run build
+npm install -g .
 ```
 
 To remove the CLI later: `curl -fsSL …/install.sh | sh -s -- --uninstall` (or
