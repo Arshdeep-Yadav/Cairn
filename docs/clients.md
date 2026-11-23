@@ -2,11 +2,13 @@
 
 Cairn runs as a **local MCP stdio server**. Any client that supports MCP can load it. The fastest path is the connector built into the CLI — it edits (or prints) the right config files for you, and backs up everything it touches (redacted) into `vault/state/backups/`.
 
+Install the CLI first with `curl -fsSL https://raw.githubusercontent.com/Arshdeep-Yadav/Cairn/main/install.sh | sh` (or `irm …/install.ps1 | iex` on Windows). The npm names `cairn` and `cairn-memory` belong to unrelated packages, so the commands below use the installed `cairn` command.
+
 ```sh
-npx cairn connect <client…> [--vault .cairn] [--project <name>] [--git-hooks] [--dry-run]
+cairn connect <client…> [--vault .cairn] [--project <name>] [--git-hooks] [--dry-run]
 ```
 
-Multiple clients at once is fine: `npx cairn connect claude-code cursor antigravity`.
+Multiple clients at once is fine: `cairn connect claude-code cursor antigravity`.
 
 Supported: `claude-code`, `cursor`, `antigravity`, `vscode`, `codex`, `gemini`, `windsurf`, `zed`, `omnirush`, `opencode`, `generic`.
 
@@ -31,10 +33,10 @@ Cairn ships an agent guide in two forms, and `connect` installs the right one fo
 | **Skill** | Long-form playbook with the full loop, note templates, examples, tool map, and chat behavior. Loaded on demand by skill-aware clients. | `.claude/skills/cairn/SKILL.md` (Claude Code) or `.agents/skills/cairn/SKILL.md` (Antigravity, OpenCode, Omnirush, generic). |
 
 ```sh
-npx cairn skill              # show where the skill and rule are installed
-npx cairn skill --install    # write both standard skill locations
-npx cairn skill --print      # print the skill markdown
-npx cairn skill --print-rule # print the always-on rule
+cairn skill              # show where the skill and rule are installed
+cairn skill --install    # write both standard skill locations
+cairn skill --print      # print the skill markdown
+cairn skill --print-rule # print the always-on rule
 ```
 
 Clients without skill support still get the rule, so the agent knows the session loop either way.
@@ -44,7 +46,7 @@ Clients without skill support still get the rule, so the agent knows the session
 ## Claude Code (full integration)
 
 ```sh
-npx cairn connect claude-code --git-hooks
+cairn connect claude-code --git-hooks
 ```
 
 | File | What gets written |
@@ -63,12 +65,12 @@ For user scope instead of project scope:
 claude mcp add --scope user cairn -- node <path-to-cairn>/dist/cli/index.js mcp --vault .cairn --project <project> --agent claude-code
 ```
 
-If you don't want hooks: `npx cairn connect claude-code --no-hooks`.
+If you don't want hooks: `cairn connect claude-code --no-hooks`.
 
 ## Cursor
 
 ```sh
-npx cairn connect cursor
+cairn connect cursor
 ```
 
 | File | What gets written |
@@ -81,7 +83,7 @@ Cursor's own hooks are not installed automatically. Restart or reload the window
 ## Antigravity
 
 ```sh
-npx cairn connect antigravity
+cairn connect antigravity
 ```
 
 | File | What gets written |
@@ -96,7 +98,7 @@ Global option: copy the `mcpServers` block from `.agents/mcp_config.json` into `
 ## VS Code / GitHub Copilot
 
 ```sh
-npx cairn connect vscode
+cairn connect vscode
 ```
 
 Writes `.mcp.json` at the workspace root (VS Code's standard project-level MCP config) plus the `AGENTS.md` instruction block. VS Code asks for approval before starting a project MCP server — pick **Allow** when the toast appears.
@@ -104,7 +106,7 @@ Writes `.mcp.json` at the workspace root (VS Code's standard project-level MCP c
 ## Codex
 
 ```sh
-npx cairn connect codex
+cairn connect codex
 ```
 
 Updates `AGENTS.md` and **prints** the TOML snippet — Codex config is not auto-edited. Add it to `~/.codex/config.toml` (or `.codex/config.toml` for project scope):
@@ -118,7 +120,7 @@ args = ["<path-to-cairn>/dist/cli/index.js", "mcp", "--vault", ".cairn", "--proj
 ## Gemini CLI
 
 ```sh
-npx cairn connect gemini
+cairn connect gemini
 ```
 
 Updates `GEMINI.md` and prints the JSON snippet. Add it to `~/.gemini/settings.json` (or `.gemini/settings.json` for project scope):
@@ -137,7 +139,7 @@ Updates `GEMINI.md` and prints the JSON snippet. Add it to `~/.gemini/settings.j
 ## Windsurf
 
 ```sh
-npx cairn connect windsurf
+cairn connect windsurf
 ```
 
 Prints the JSON snippet — Windsurf config is not auto-edited. Add it to `~/.codeium/windsurf/mcp_config.json` (or your Cortex-managed `mcp_config.json`), then reload Windsurf.
@@ -145,7 +147,7 @@ Prints the JSON snippet — Windsurf config is not auto-edited. Add it to `~/.co
 ## Zed
 
 ```sh
-npx cairn connect zed
+cairn connect zed
 ```
 
 Prints the JSON snippet — Zed config is not auto-edited. Add it to `~/.config/zed/settings.json` under `context_servers`:
@@ -165,7 +167,7 @@ Prints the JSON snippet — Zed config is not auto-edited. Add it to `~/.config/
 ## Omnirush / OpenCode
 
 ```sh
-npx cairn connect omnirush opencode
+cairn connect omnirush opencode
 ```
 
 Prints an OpenCode-style config block. If your client manages local servers in its database or UI, add the `mcp.cairn` entry through the app instead:
@@ -188,7 +190,7 @@ Some local-server allowlists require approving `node` processes launched outside
 ## Anything else (generic)
 
 ```sh
-npx cairn connect generic
+cairn connect generic
 ```
 
 Prints the standard stdio snippet. Any MCP client that accepts `command` + `args` works. Clients that only accept full URLs can use an MCP proxy that spawns the process and bridges stdio.
@@ -217,20 +219,20 @@ With a global vault, pass `--project <name>` in each client's server entry so wr
 ## Verifying
 
 ```sh
-npx cairn status         # vault, memory stats, workspace state, wired clients
-npx cairn doctor         # read-only health check: vault found, note count, graph size, warnings
-npx cairn list           # recent notes as seen from this directory
-npx cairn context        # the same brief agents get on session start
+cairn status         # vault, memory stats, workspace state, wired clients
+cairn doctor         # read-only health check: vault found, note count, graph size, warnings
+cairn list           # recent notes as seen from this directory
+cairn context        # the same brief agents get on session start
 ```
 
 `status` also shows the exact MCP command to paste into any client. The workspace UI repeats it with a copy button on the **Connect agents** page and on **Agents**.
 
-`doctor` never creates or modifies anything. If it reports "no vault found", run `npx cairn init` (or `connect`, which inits as a side effect) first.
+`doctor` never creates or modifies anything. If it reports "no vault found", run `cairn init` (or `connect`, which inits as a side effect) first.
 
 ## Uninstalling
 
 ```sh
-npx cairn connect --dry-run          # review what would change
+cairn connect --dry-run          # review what would change
 ```
 
 Then remove the `cairn` entry from each client config, the marked block from `CLAUDE.md` / `AGENTS.md`, the hook groups named in `.claude/settings.json`, and delete the vault folder if you no longer want the memory. Redacted copies of every edited file are in `vault/state/backups/`.

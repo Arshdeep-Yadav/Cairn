@@ -153,7 +153,8 @@ Environment=CAIRN_ALLOW_REMOTE=1
 Environment=CAIRN_ALLOWED_HOSTS=cairn.example.com
 Environment=CAIRN_SECURE_COOKIE=1
 Environment=CAIRN_PASSWORD=your-strong-password
-ExecStart=/usr/bin/npx cairn start --vault /var/lib/cairn/.cairn --host 0.0.0.0 --allow-remote --no-open
+# Install the CLI first: curl -fsSL https://raw.githubusercontent.com/Arshdeep-Yadav/Cairn/main/install.sh | sh
+ExecStart=/usr/local/bin/cairn start --vault /var/lib/cairn/.cairn --host 0.0.0.0 --allow-remote --no-open
 Restart=on-failure
 
 [Install]

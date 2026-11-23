@@ -44,44 +44,70 @@ Every modern coding agent — **Claude Code, Cursor, Antigravity, Codex, Copilot
 
 Requires **Node.js 20+**.
 
-### 1. Launch Cairn
+### 1. Install the CLI
 
-Run directly with `npx` (no installation required):
+The npm names `cairn` and `cairn-memory` are taken by unrelated packages, so Cairn
+installs straight from this repository. The installer builds from source with
+Node/npm and puts a `cairn` command on your `PATH`:
 
 ```bash
-npx cairn
+# macOS / Linux
+curl -fsSL https://raw.githubusercontent.com/Arshdeep-Yadav/Cairn/main/install.sh | sh
 ```
 
-Cairn automatically initializes a `.cairn/` vault if one doesn't exist, starts the local workspace server on `http://127.0.0.1:4242`, and displays your initial workspace password.
+```powershell
+# Windows PowerShell
+irm https://raw.githubusercontent.com/Arshdeep-Yadav/Cairn/main/install.ps1 | iex
+```
 
-### 2. Wire Your Coding Agent in One Command
+Prefer npm, or want to try it without a global install? Use the GitHub package spec:
+
+```bash
+npm install -g github:Arshdeep-Yadav/Cairn
+# or, one command with no install:
+npx --yes --package github:Arshdeep-Yadav/Cairn cairn --help
+```
+
+To remove the CLI later: `curl -fsSL …/install.sh | sh -s -- --uninstall` (or
+`npm uninstall -g cairn-memory`). Your `.cairn/` vault is never touched.
+
+### 2. Launch Cairn
+
+Run from your project root. Cairn initializes a `.cairn/` vault if one doesn't exist,
+starts the local workspace on `http://127.0.0.1:4242`, and prints a one-time password.
+
+```bash
+cairn
+```
+
+### 3. Wire Your Coding Agent in One Command
 
 Connect Claude Code with automated session hooks and git commit tracking:
 
 ```bash
-npx cairn start --connect claude-code --git-hooks
+cairn start --connect claude-code --git-hooks
 ```
 
 Connect other supported tools:
 
 ```bash
 # Cursor IDE
-npx cairn connect cursor
+cairn connect cursor
 
 # Antigravity IDE
-npx cairn connect antigravity
+cairn connect antigravity
 
 # VS Code / GitHub Copilot
-npx cairn connect vscode
+cairn connect vscode
 
 # Multiple tools at once
-npx cairn connect claude-code cursor antigravity vscode
+cairn connect claude-code cursor antigravity vscode
 ```
 
-### 3. Check Workspace Status
+### 4. Check Workspace Status
 
 ```bash
-npx cairn status
+cairn status
 ```
 
 ```text
@@ -176,7 +202,7 @@ cairn mcp --vault .cairn --project <project> --agent <handle>
 Launch the built-in, zero-build web workspace:
 
 ```bash
-npx cairn ui --open
+cairn ui --open
 ```
 
 <div align="center">
