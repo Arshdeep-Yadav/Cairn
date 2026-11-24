@@ -52,6 +52,7 @@ const PUBLIC_ASSETS = new Map<string, string>([
   ['/login', 'login.html'],
   ['/login.html', 'login.html'],
   ['/login.js', 'login.js'],
+  ['/login-fallback.js', 'login-fallback.js'],
   ['/login.css', 'login.css'],
   ['/favicon.svg', 'favicon.svg'],
   ['/manifest.webmanifest', 'manifest.webmanifest'],

@@ -171,6 +171,10 @@ describe('workspace authentication', () => {
     expect(script.status).toBe(200);
     expect(script.headers.get('cache-control')).toBe('no-cache');
 
+    const fallback = await fetch(`${ui.url}/login-fallback.js`);
+    expect(fallback.status).toBe(200);
+    expect(fallback.headers.get('content-type')).toContain('javascript');
+
     const status = await fetch(`${ui.url}/api/auth/status`);
     expect(status.status).toBe(200);
     expect(await status.json()).toMatchObject({ authenticated: false });
