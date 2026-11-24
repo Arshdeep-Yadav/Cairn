@@ -429,6 +429,7 @@ body.modal-open { overflow: hidden; }
 .panel {
   border: 1px solid var(--line); border-radius: var(--radius-lg);
   background: var(--surface); box-shadow: var(--shadow-sm);
+  padding-bottom: 16px;
 }
 .panel-head {
   display: flex; align-items: center; gap: 10px;
@@ -908,9 +909,10 @@ body.modal-open { overflow: hidden; }
   white-space: nowrap;
 }
 .setup-mode--writes { color: var(--moss); border-color: color-mix(in srgb, var(--moss) 34%, var(--line)); }
-.setup-where { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; }
+/* Inline flow keeps the sentence fragments and the copy button on one baseline. */
+.setup-where { display: block; line-height: 1.7; }
 .setup-cwd {
-  display: inline-flex; align-items: center; gap: 4px; padding: 2px 7px;
+  display: inline-flex; align-items: center; vertical-align: -3px; gap: 4px; padding: 2px 7px;
   border: 1px solid var(--line); border-radius: var(--radius-xs);
   background: var(--wash); color: var(--ink-2); cursor: pointer; font-family: inherit;
 }
@@ -947,6 +949,8 @@ body.modal-open { overflow: hidden; }
 .setup-cmd .icon { width: 12px; height: 12px; flex: none; }
 .setup-cmd:hover { color: var(--ink); border-color: var(--line-strong); background: var(--surface); }
 .setup-lower { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 14px; }
+.setup-lower .panel { display: flex; flex-direction: column; }
+.setup-lower .panel > .setup-hint { margin-top: auto; padding-top: 10px; }
 .setup-kinds { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
 .setup-kinds .chip { display: inline-flex; align-items: center; gap: 5px; }
 .setup-kinds .chip .icon { width: 13px; height: 13px; }
