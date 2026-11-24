@@ -1,5 +1,8 @@
 node_modules/
 dist/
+
+# The marketing site is its own repo (Arshdeep-Yadav/cairn.site)
+site/
 coverage/
 .cairn/
 *.log
