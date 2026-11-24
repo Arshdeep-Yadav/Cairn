@@ -56,7 +56,7 @@ curl -fsSL https://raw.githubusercontent.com/Arshdeep-Yadav/Cairn/main/install.s
 ```
 
 ```powershell
-# Windows PowerShell
+# Windows PowerShell (do not use the `| sh` command here — Windows has no sh)
 irm https://raw.githubusercontent.com/Arshdeep-Yadav/Cairn/main/install.ps1 | iex
 ```
 
@@ -70,8 +70,8 @@ npm run build
 npm install -g .
 ```
 
-To remove the CLI later: `curl -fsSL …/install.sh | sh -s -- --uninstall` (or
-`npm uninstall -g cairn-memory`). Your `.cairn/` vault is never touched.
+To remove the CLI later: `curl -fsSL https://raw.githubusercontent.com/Arshdeep-Yadav/Cairn/main/install.sh | sh -s -- --uninstall`
+(or `npm uninstall -g cairn-memory`). Your `.cairn/` vault is never touched.
 
 ### 2. Launch Cairn
 

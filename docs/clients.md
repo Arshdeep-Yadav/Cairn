@@ -2,7 +2,7 @@
 
 Cairn runs as a **local MCP stdio server**. Any client that supports MCP can load it. The fastest path is the connector built into the CLI — it edits (or prints) the right config files for you, and backs up everything it touches (redacted) into `vault/state/backups/`.
 
-Install the CLI first with `curl -fsSL https://raw.githubusercontent.com/Arshdeep-Yadav/Cairn/main/install.sh | sh` (or `irm …/install.ps1 | iex` on Windows). The npm names `cairn` and `cairn-memory` belong to unrelated packages, so the commands below use the installed `cairn` command.
+Install the CLI first with `curl -fsSL https://raw.githubusercontent.com/Arshdeep-Yadav/Cairn/main/install.sh | sh` (or `irm https://raw.githubusercontent.com/Arshdeep-Yadav/Cairn/main/install.ps1 | iex` on Windows). The npm names `cairn` and `cairn-memory` belong to unrelated packages, so the commands below use the installed `cairn` command.
 
 ```sh
 cairn connect <client…> [--vault .cairn] [--project <name>] [--git-hooks] [--dry-run]
