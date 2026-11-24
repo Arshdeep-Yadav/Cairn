@@ -2326,6 +2326,7 @@ async function submitCapture(event) {
   const form = $('#capture-form');
   if (!form) return;
   const submit = form.querySelector('button[type="submit"]');
+  if (submit?.disabled) return;
   const data = new FormData(form);
   const kind = String(data.get('kind') || 'note');
   const title = String(data.get('title') || '').trim();
@@ -3343,13 +3344,15 @@ const scheduleLiveRefresh = debounce(async () => {
     await refreshGraphData();
     return;
   }
+  // renderBase() clears the inspector DOM, so remember the open note first.
+  const selected = state.selectedId;
   try {
     await renderBase(state.route);
   } catch {
     return;
   }
-  if (state.selectedId && inspectorIsOpen()) {
-    loadInspector(state.selectedId, true).catch(() => {});
+  if (selected) {
+    loadInspector(selected, true).catch(() => {});
   }
 }, 200);
 

@@ -37,14 +37,18 @@ export interface WiredClient {
   file: string;
 }
 
+/** Single quotes keep `$`, backticks and backslashes inert in generated shell snippets. */
+export function quoteShell(value: string): string {
+  return `'${value.replace(/'/g, "'\\''")}'`;
+}
+
 /**
  * MCP command shown to humans. Uses absolute paths because GUI-launched clients
  * do not inherit npm's global bin directory on PATH.
  */
 export function mcpCommand(vaultDir: string, project: string, agent = '<handle>'): string {
-  const quote = (value: string) => `"${value.replace(/"/g, '\\"')}"`;
   const entry = path.resolve(import.meta.dirname, 'index.js');
-  return `${quote(process.execPath)} ${quote(entry)} mcp --vault ${quote(vaultDir)} --project ${quote(project)} --agent ${agent}`;
+  return `${quoteShell(process.execPath)} ${quoteShell(entry)} mcp --vault ${quoteShell(vaultDir)} --project ${quoteShell(project)} --agent ${agent}`;
 }
 
 /**

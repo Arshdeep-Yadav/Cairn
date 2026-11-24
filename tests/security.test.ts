@@ -304,6 +304,51 @@ describe('workspace authentication', () => {
     const correctWhileLocked = await login(PASSWORD);
     expect(correctWhileLocked.status).toBe(429);
   });
+
+  it('does not clear a lockout through the no-op password-change route', async () => {
+    const noop = await fetch(`${ui.url}/api/auth/must-change`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: '{}',
+    });
+    expect(noop.status).toBe(400);
+
+    const stillLocked = await login('still-wrong');
+    expect(stillLocked.status).toBe(429);
+  });
+
+  it('keys the login limiter by forwarded client behind a local proxy', async () => {
+    const attempt = (ip: string) =>
+      rawRequest(ui.port, {
+        path: '/api/auth/login',
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-Forwarded-For': ip },
+        body: JSON.stringify({ password: 'still-wrong' }),
+      });
+    for (let i = 0; i < 4; i++) expect((await attempt('10.0.0.7')).status).toBe(401);
+    expect((await attempt('10.0.0.7')).status).toBe(429);
+    expect((await attempt('10.0.0.8')).status).toBe(401);
+  });
+
+  it('drops loopback hosts when an explicit allowlist is configured', async () => {
+    const store = openStore({ vault: vaultDir, cwd: tempRoot, agent: 'human', autoInit: false });
+    const remote = await startUiServer({
+      store,
+      auth,
+      port: 0,
+      host: '127.0.0.1',
+      webRoot: path.join(ROOT, 'web'),
+      allowedHosts: ['cairn.example.com'],
+    });
+    try {
+      const spoofed = await rawRequest(remote.port, { path: '/api/health', host: 'localhost' });
+      expect(spoofed.status).toBe(403);
+      const allowed = await rawRequest(remote.port, { path: '/api/health', host: 'cairn.example.com' });
+      expect(allowed.status).toBe(200);
+    } finally {
+      await remote.close();
+    }
+  });
 });
 
 describe('first-login password challenge', () => {

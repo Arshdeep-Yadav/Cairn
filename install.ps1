@@ -7,6 +7,7 @@
 
 $ErrorActionPreference = 'Stop'
 $Ref = if ($env:CAIRN_REF) { $env:CAIRN_REF } else { 'main' }
+$Repo = if ($env:CAIRN_REPO) { $env:CAIRN_REPO } else { 'https://github.com/Arshdeep-Yadav/Cairn.git' }
 $Package = 'cairn-memory'
 
 if ($args -contains '--uninstall' -or $env:CAIRN_UNINSTALL -eq '1') {
@@ -28,15 +29,16 @@ try {
 
   if (Get-Command git -ErrorAction SilentlyContinue) {
     $source = Join-Path $tmp 'Cairn'
-    git clone --quiet --depth 1 --branch $Ref 'https://github.com/Arshdeep-Yadav/Cairn.git' $source
+    git clone --quiet --depth 1 --branch $Ref $Repo $source
     if ($LASTEXITCODE -ne 0) { throw "Could not clone Cairn (ref: $Ref)." }
   } else {
     $zip = Join-Path $tmp 'cairn.zip'
+    $slug = $Repo -replace '^https?://[^/]+/', '' -replace '^git@[^:]+:', '' -replace '\.git$', ''
     try {
-      Invoke-WebRequest -UseBasicParsing -Uri "https://codeload.github.com/Arshdeep-Yadav/Cairn/zip/refs/heads/$Ref" -OutFile $zip
+      Invoke-WebRequest -UseBasicParsing -Uri "https://codeload.github.com/$slug/zip/refs/heads/$Ref" -OutFile $zip
     } catch {
       # CAIRN_REF may be a tag, which lives under refs/tags rather than refs/heads.
-      Invoke-WebRequest -UseBasicParsing -Uri "https://codeload.github.com/Arshdeep-Yadav/Cairn/zip/refs/tags/$Ref" -OutFile $zip
+      Invoke-WebRequest -UseBasicParsing -Uri "https://codeload.github.com/$slug/zip/refs/tags/$Ref" -OutFile $zip
     }
     Expand-Archive -Path $zip -DestinationPath $tmp -Force
     $source = Get-ChildItem -Path $tmp -Directory -Filter 'Cairn-*' | Select-Object -First 1

@@ -377,7 +377,7 @@ export class Store {
       project: options.project ? this.resolveProject(options.project) : undefined,
       agent: options.agent ? handle(options.agent) : undefined,
       kinds: options.kinds,
-      since,
+      createdSince: since,
       limit: options.limit ?? 80,
       sort: 'created',
     });

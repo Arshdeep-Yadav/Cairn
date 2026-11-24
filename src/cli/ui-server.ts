@@ -160,7 +160,17 @@ function contentKind(request: http.IncomingMessage): string {
 }
 
 function clientAddress(request: http.IncomingMessage): string {
-  return request.socket.remoteAddress || 'unknown';
+  const peer = request.socket.remoteAddress || 'unknown';
+  // Only a local reverse proxy can set X-Forwarded-For; trusting it from a
+  // remote peer would let attackers pick a fresh rate-limit bucket per request.
+  const localPeer = peer === '127.0.0.1' || peer === '::1' || peer === '::ffff:127.0.0.1';
+  if (localPeer) {
+    const raw = request.headers['x-forwarded-for'];
+    const value = Array.isArray(raw) ? raw[0] : raw;
+    const first = String(value || '').split(',')[0]?.trim();
+    if (first && first.length <= 64 && /^[\w.:-]+$/.test(first)) return first;
+  }
+  return peer;
 }
 
 function normalizeHostname(value: string): string {
@@ -194,9 +204,18 @@ function parseHostHeader(raw: string | undefined): string | null {
 }
 
 function buildAllowedHosts(boundHost: string, extra: string[] = []): Set<string> {
-  const allowed = new Set(DEFAULT_ALLOWED_HOSTS);
+  const allowed = new Set<string>();
   const bind = normalizeHostname(boundHost);
-  if (bind && bind !== '0.0.0.0' && bind !== '::') allowed.add(bind);
+  const isLoopback = (host: string) =>
+    host === 'localhost' || host === '127.0.0.1' || host === '::1' || host === '0:0:0:0:0:0:0:1';
+  // An explicit allowlist replaces the loopback defaults. Keeping them would
+  // let anyone who can reach a published port pass with `Host: localhost`.
+  if (!extra.length) {
+    for (const host of DEFAULT_ALLOWED_HOSTS) allowed.add(host);
+    if (bind && bind !== '0.0.0.0' && bind !== '::') allowed.add(bind);
+  } else if (bind && bind !== '0.0.0.0' && bind !== '::' && !isLoopback(bind)) {
+    allowed.add(bind);
+  }
   for (const entry of extra) {
     const trimmed = entry.trim().toLowerCase();
     if (!trimmed) continue;
@@ -637,16 +656,17 @@ export async function startUiServer(options: UiServerOptions): Promise<UiServer>
           reject(request, response, 415, 'Content-Type must be application/json.', 'unsupported_media_type');
           return;
         }
+        if (!auth.mustChangePassword()) {
+          // A no-op must not touch the limiter at all: otherwise attackers
+          // interleave it with wrong logins to avoid lockout.
+          json(response, 400, { error: 'No password change is required.', code: 'not_required' });
+          return;
+        }
         const key = clientAddress(request);
         const retryAfter = limiter.retryAfter(key);
         if (retryAfter > 0) {
           response.setHeader('Retry-After', String(retryAfter));
           reject(request, response, 429, `Too many failed attempts. Try again in ${retryAfter} seconds.`, 'rate_limited');
-          return;
-        }
-        if (!auth.mustChangePassword()) {
-          limiter.success(key);
-          json(response, 400, { error: 'No password change is required.', code: 'not_required' });
           return;
         }
         const body = (await readBody(request)) as Record<string, unknown>;

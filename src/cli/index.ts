@@ -14,8 +14,8 @@ import {
 import { redactSecrets } from '../core/redact.js';
 import { renderNote, renderStats, renderTimeline } from '../core/format.js';
 import { humanizeHandle, relativeTime } from '../core/text.js';
-import { detectClientWiring, mcpCommand } from './connections.js';
-import { downloadInstaller, installerUrl, runInstaller } from './update.js';
+import { detectClientWiring, mcpCommand, quoteShell } from './connections.js';
+import { installerPath, runInstaller } from './update.js';
 import type { UiServer } from './ui-server.js';
 import { ALL_SKILL_DIRS, cairnRuleText, cairnSkillText, skillDirsForClient } from './guides.js';
 import { KINDS, type Kind } from '../core/types.js';
@@ -70,8 +70,8 @@ function parseArgs(argv: string[]): ParsedArgs {
 const parsed = parseArgs(process.argv.slice(2));
 const hasExplicitCommand = parsed.positionals.length > 0;
 let command = parsed.positionals.shift() || 'start';
-if (parsed.flags.has('version') && !hasExplicitCommand) command = 'version';
-if (parsed.flags.has('help') && !hasExplicitCommand) command = 'help';
+if ((parsed.flags.has('version') || parsed.flags.has('v')) && !hasExplicitCommand) command = 'version';
+if ((parsed.flags.has('help') || parsed.flags.has('h')) && !hasExplicitCommand) command = 'help';
 let forcedVaultDir: string | undefined;
 
 function opt(name: string): string | undefined {
@@ -191,10 +191,6 @@ function cliEntryPath(): string {
 
 function toPosix(input: string): string {
   return input.replace(/\\/g, '/');
-}
-
-function quoteShell(value: string): string {
-  return `"${value.replace(/"/g, '\\"')}"`;
 }
 
 function projectRootFor(cwd = process.cwd()): string {
@@ -718,17 +714,9 @@ async function commandInit(): Promise<void> {
 }
 
 async function commandUpdate(): Promise<void> {
-  const ref = process.env.CAIRN_REF || 'main';
-  const temp = fs.mkdtempSync(path.join(os.tmpdir(), 'cairn-update-'));
-  try {
-    const script = path.join(temp, process.platform === 'win32' ? 'install.ps1' : 'install.sh');
-    print(`Updating Cairn from ${ref}…`);
-    await downloadInstaller(installerUrl(ref, process.platform), script);
-    runInstaller(script, process.platform);
-    print('Cairn updated. Your vault was not touched.');
-  } finally {
-    fs.rmSync(temp, { recursive: true, force: true });
-  }
+  print(`Updating Cairn from ${process.env.CAIRN_REF || 'main'}…`);
+  runInstaller(installerPath(process.platform), process.platform);
+  print('Cairn updated. Your vault was not touched.');
 }
 
 async function commandMcp(): Promise<void> {
@@ -1194,12 +1182,13 @@ async function commandHook(subcommand: string): Promise<void> {
 
     throw new Error(`Unknown hook: ${subcommand}`);
   } catch (error) {
+    const message = redactSecrets((error as Error).message);
     try {
       const vault = opt('vault') || intendedVaultDir();
       if (vaultExists(vault)) {
         fs.appendFileSync(
           path.join(vault, 'state', 'hooks.log'),
-          `[${new Date().toISOString()}] ${subcommand}: ${(error as Error).message}\n`,
+          `[${new Date().toISOString()}] ${subcommand}: ${message}\n`,
           'utf8',
         );
       }
@@ -1207,7 +1196,7 @@ async function commandHook(subcommand: string): Promise<void> {
       // Hooks must never fail the host tool call.
     }
     if (process.env.CAIRN_DEBUG) {
-      process.stderr.write(`[cairn] hook ${subcommand} failed: ${(error as Error).message}\n`);
+      process.stderr.write(`[cairn] hook ${subcommand} failed: ${message}\n`);
     }
   }
 }

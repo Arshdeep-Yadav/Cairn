@@ -619,6 +619,7 @@ export class VaultIndex {
       : null;
     const sinceMs = options.since ? dateMs(options.since) : null;
     const untilMs = options.until ? dateMs(options.until) : null;
+    const createdSinceMs = options.createdSince ? dateMs(options.createdSince) : null;
     const targetTo = options.to ? handle(options.to) : null;
     const targetFiles = options.files?.length
       ? options.files.map((file) => normalizeFilePath(file).toLowerCase())
@@ -631,6 +632,7 @@ export class VaultIndex {
       if (targetSession && note.session !== targetSession) return false;
       if (!includeArchived && note.status === 'archived') return false;
       if (statuses && !statuses.includes(note.status)) return false;
+      if (createdSinceMs !== null && dateMs(note.created) < createdSinceMs) return false;
       if (sinceMs !== null && dateMs(note.updated) < sinceMs) return false;
       if (untilMs !== null && dateMs(note.updated) > untilMs) return false;
       if (targetTo && !note.to.some((entry) => entry === targetTo || entry === '*')) return false;

@@ -1,28 +1,15 @@
 import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
+import path from 'node:path';
 
-const RAW_BASE = 'https://raw.githubusercontent.com/Arshdeep-Yadav/Cairn';
+const PACKAGE_ROOT = path.resolve(import.meta.dirname, '..', '..');
 
-/** The ref comes from the environment, so reject anything that is not a plain git ref. */
-export function installerUrl(ref: string, platform: NodeJS.Platform): string {
-  if (!/^[A-Za-z0-9._/-]+$/.test(ref) || ref.includes('..')) {
-    throw new Error(`Invalid CAIRN_REF: ${ref}`);
-  }
+/** Self-update runs the installer shipped with this package, never a remote script. */
+export function installerPath(platform: NodeJS.Platform): string {
   const script = platform === 'win32' ? 'install.ps1' : 'install.sh';
-  return `${RAW_BASE}/${encodeURI(ref)}/${script}`;
-}
-
-/** Never execute a remote file without checking it is the installer we expect. */
-export function isInstallerScript(text: string): boolean {
-  return text.includes('cairn-memory') && text.includes('npm pack');
-}
-
-export async function downloadInstaller(url: string, destination: string): Promise<void> {
-  const response = await fetch(url);
-  if (!response.ok) throw new Error(`Could not download the Cairn installer (${response.status}).`);
-  const script = await response.text();
-  if (!isInstallerScript(script)) throw new Error('Downloaded installer failed its integrity check.');
-  fs.writeFileSync(destination, script, { encoding: 'utf8', mode: 0o700 });
+  const file = path.join(PACKAGE_ROOT, script);
+  if (!fs.existsSync(file)) throw new Error(`Cairn is missing ${script}. Reinstall cairn-memory.`);
+  return file;
 }
 
 export function runInstaller(file: string, platform: NodeJS.Platform): void {

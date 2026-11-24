@@ -250,6 +250,7 @@ export interface SearchOptions {
   to?: string;
   since?: string;
   until?: string;
+  createdSince?: string;
   limit?: number;
   offset?: number;
   includeArchived?: boolean;

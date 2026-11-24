@@ -55,10 +55,11 @@ if command -v git >/dev/null 2>&1; then
 else
   need curl
   need tar
+  slug="$(printf '%s' "$REPO" | sed -E 's#^(https?://[^/]+/|git@[^:]+:)##; s#\.git$##')"
   archive="$tmp/cairn.tar.gz"
-  if ! curl -fsSL "https://codeload.github.com/Arshdeep-Yadav/Cairn/tar.gz/refs/heads/$REF" -o "$archive"; then
+  if ! curl -fsSL "https://codeload.github.com/$slug/tar.gz/refs/heads/$REF" -o "$archive"; then
     # CAIRN_REF may be a tag, which lives under refs/tags rather than refs/heads.
-    curl -fsSL "https://codeload.github.com/Arshdeep-Yadav/Cairn/tar.gz/refs/tags/$REF" -o "$archive" \
+    curl -fsSL "https://codeload.github.com/$slug/tar.gz/refs/tags/$REF" -o "$archive" \
       || fail "could not download Cairn (ref: $REF)"
   fi
   mkdir -p "$src"
