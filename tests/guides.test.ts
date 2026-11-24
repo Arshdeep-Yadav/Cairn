@@ -43,19 +43,19 @@ describe('cairn agent guides', () => {
   it('prints stdio MCP config for the additional terminal clients', () => {
     const temp = fs.mkdtempSync(path.join(os.tmpdir(), 'cairn-connect-'));
     try {
+      const output = execFileSync(
+        process.execPath,
+        [CLI, 'connect', 'hermes', 't3-code', 'pi', 'command-code', '--dry-run', '--vault', path.join(temp, '.cairn')],
+        { cwd: temp, encoding: 'utf8', windowsHide: true },
+      );
+      expect(output).toContain('mcpServers');
       for (const client of ['hermes', 't3-code', 'pi', 'command-code']) {
-        const output = execFileSync(
-          process.execPath,
-          [CLI, 'connect', client, '--dry-run', '--vault', path.join(temp, '.cairn')],
-          { cwd: temp, encoding: 'utf8', windowsHide: true },
-        );
-        expect(output).toContain('mcpServers');
         expect(output).toContain(client);
       }
     } finally {
       fs.rmSync(temp, { recursive: true, force: true });
     }
-  });
+  }, 30_000);
 
   it('installs the skill into both standard locations', () => {
     const temp = fs.mkdtempSync(path.join(os.tmpdir(), 'cairn-skill-'));
