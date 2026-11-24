@@ -15,6 +15,7 @@ import { redactSecrets } from '../core/redact.js';
 import { renderNote, renderStats, renderTimeline } from '../core/format.js';
 import { humanizeHandle, relativeTime } from '../core/text.js';
 import { detectClientWiring, mcpCommand } from './connections.js';
+import { downloadInstaller, installerUrl, runInstaller } from './update.js';
 import type { UiServer } from './ui-server.js';
 import { ALL_SKILL_DIRS, cairnRuleText, cairnSkillText, skillDirsForClient } from './guides.js';
 import { KINDS, type Kind } from '../core/types.js';
@@ -716,6 +717,20 @@ async function commandInit(): Promise<void> {
   }
 }
 
+async function commandUpdate(): Promise<void> {
+  const ref = process.env.CAIRN_REF || 'main';
+  const temp = fs.mkdtempSync(path.join(os.tmpdir(), 'cairn-update-'));
+  try {
+    const script = path.join(temp, process.platform === 'win32' ? 'install.ps1' : 'install.sh');
+    print(`Updating Cairn from ${ref}…`);
+    await downloadInstaller(installerUrl(ref, process.platform), script);
+    runInstaller(script, process.platform);
+    print('Cairn updated. Your vault was not touched.');
+  } finally {
+    fs.rmSync(temp, { recursive: true, force: true });
+  }
+}
+
 async function commandMcp(): Promise<void> {
   // The MCP SDK and zod are only needed by this command. Keep them out of
   // every other CLI invocation (hooks run on each agent tool call).
@@ -1405,6 +1420,7 @@ Usage:
   cairn stats [--project name]
   cairn export [--out graph.json]
   cairn doctor
+  cairn update                   # reinstall the latest CLI (CAIRN_REF pins a ref)
 
 Clients:
   claude-code, cursor, antigravity, vscode, codex, gemini, windsurf, zed,
@@ -1507,6 +1523,9 @@ async function main(): Promise<void> {
       break;
     case 'doctor':
       commandDoctor();
+      break;
+    case 'update':
+      await commandUpdate();
       break;
     case 'auth':
       commandAuth(parsed.positionals[0] || 'status', parsed.positionals[1]);

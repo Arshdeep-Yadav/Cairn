@@ -70,6 +70,10 @@ npm run build
 npm install -g .
 ```
 
+To update an installed CLI, run `cairn update` (set `CAIRN_REF` to pin a tag or
+branch). It downloads the matching installer, rebuilds, and reinstalls the tarball;
+your `.cairn/` vault is never touched.
+
 To remove the CLI later: `curl -fsSL https://raw.githubusercontent.com/Arshdeep-Yadav/Cairn/main/install.sh | sh -s -- --uninstall`
 (or `npm uninstall -g cairn-memory`). Your `.cairn/` vault is never touched.
 
