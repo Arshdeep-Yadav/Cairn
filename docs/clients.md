@@ -10,7 +10,9 @@ cairn connect <client…> [--vault .cairn] [--project <name>] [--git-hooks] [--d
 
 Multiple clients at once is fine: `cairn connect claude-code cursor antigravity`.
 
-Supported: `claude-code`, `cursor`, `antigravity`, `vscode`, `codex`, `gemini`, `windsurf`, `zed`, `omnirush`, `opencode`, `generic`.
+Supported: `claude-code`, `cursor`, `antigravity`, `vscode`, `codex`, `gemini`, `windsurf`, `zed`, `omnirush`, `opencode`, `hermes`, `t3-code`, `pi`, `command-code`, `generic`.
+
+`hermes`, `t3-code`, `pi`, and `command-code` install `AGENTS.md` and the shared skill, and print the stdio MCP entry for you to paste — their config paths are not stable enough to edit automatically.
 
 The server entry is always the same shape:
 
@@ -30,7 +32,7 @@ Cairn ships an agent guide in two forms, and `connect` installs the right one fo
 | Artifact | Purpose | Written to |
 | --- | --- | --- |
 | **Rule** | Compact, always-on session contract: read first, write decisions and changes as work happens, never store secrets. | The client's native rule location: `CLAUDE.md`, `AGENTS.md`, `GEMINI.md`, `.cursor/rules/cairn.mdc`, or `.agents/rules/cairn.md`. |
-| **Skill** | Long-form playbook with the full loop, note templates, examples, tool map, and chat behavior. Loaded on demand by skill-aware clients. | `.claude/skills/cairn/SKILL.md` (Claude Code) or `.agents/skills/cairn/SKILL.md` (Antigravity, OpenCode, Omnirush, generic). |
+| **Skill** | Long-form playbook with the full loop, note templates, examples, tool map, and chat behavior. Loaded on demand by skill-aware clients. | `.claude/skills/cairn/SKILL.md` (Claude Code) or `.agents/skills/cairn/SKILL.md` (Antigravity, OpenCode, Omnirush, Hermes Agent, T3 Code, Pi, Command Code, generic). |
 
 ```sh
 cairn skill              # show where the skill and rule are installed

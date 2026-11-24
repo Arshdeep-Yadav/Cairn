@@ -635,6 +635,24 @@ function connectClient(client: string, dryRun = false): ConnectResult {
       notes.push('Omnirush/OpenCode: printed config. Omnirush may require adding local node servers through its UI/allowlist.');
       break;
     }
+    case 'hermes':
+    case 't3-code':
+    case 'pi':
+    case 'command-code': {
+      const labels: Record<string, string> = {
+        hermes: 'Hermes Agent',
+        't3-code': 'T3 Code',
+        pi: 'Pi',
+        'command-code': 'Command Code',
+      };
+      const label = labels[client] || client;
+      if (upsertInstructionBlock(path.join(cwd, 'AGENTS.md'), vaultDir, cairnRuleText(), dryRun) === 'updated') {
+        files.push('AGENTS.md');
+      }
+      print(`Add this to ${label}'s MCP config (stdio):\n\n${mcpSnippet(client, 'mcpServers', vaultDir, project)}\n`);
+      notes.push(`${label}: printed stdio MCP JSON; AGENTS.md and the shared skill installed. Client config was not modified automatically.`);
+      break;
+    }
     case 'generic': {
       print(`Cairn MCP config (stdio):\n\n${mcpSnippet('generic', 'mcpServers', vaultDir, project)}\n`);
       notes.push('Generic MCP: printed JSON; add it to your client\'s MCP configuration.');
@@ -642,7 +660,7 @@ function connectClient(client: string, dryRun = false): ConnectResult {
     }
     default:
       throw new Error(
-        `Unknown client: ${client}. Supported: claude-code, cursor, antigravity, vscode, codex, gemini, windsurf, zed, omnirush, opencode, generic.`,
+        `Unknown client: ${client}. Supported: claude-code, cursor, antigravity, vscode, codex, gemini, windsurf, zed, omnirush, opencode, hermes, t3-code, pi, command-code, generic.`,
       );
   }
 
@@ -1390,7 +1408,7 @@ Usage:
 
 Clients:
   claude-code, cursor, antigravity, vscode, codex, gemini, windsurf, zed,
-  omnirush, opencode, generic
+  omnirush, opencode, hermes, t3-code, pi, command-code, generic
 
 Memory model:
   Every note is Markdown with YAML frontmatter in a .cairn vault. Wikilinks,

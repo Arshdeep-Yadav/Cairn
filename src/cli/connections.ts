@@ -24,6 +24,10 @@ export const CLIENT_SETUPS: ClientSetup[] = [
   { id: 'gemini', name: 'Gemini CLI', note: 'Prints settings JSON and updates GEMINI.md', category: 'terminal', install: 'prints' },
   { id: 'opencode', name: 'OpenCode', note: 'Prints a local server entry and installs the skill', category: 'terminal', install: 'prints' },
   { id: 'omnirush', name: 'Omnirush', note: 'Prints a local server entry and installs the skill', category: 'terminal', install: 'prints' },
+  { id: 'hermes', name: 'Hermes Agent', note: 'Prints a stdio MCP entry; AGENTS.md and the shared skill are installed', category: 'terminal', install: 'prints' },
+  { id: 't3-code', name: 'T3 Code', note: 'Prints a stdio MCP entry; AGENTS.md and the shared skill are installed', category: 'terminal', install: 'prints' },
+  { id: 'pi', name: 'Pi', note: 'Prints a stdio MCP entry; AGENTS.md and the shared skill are installed', category: 'terminal', install: 'prints' },
+  { id: 'command-code', name: 'Command Code', note: 'Prints a stdio MCP entry; AGENTS.md and the shared skill are installed', category: 'terminal', install: 'prints' },
   { id: 'generic', name: 'Anything else', note: 'Stdio MCP snippet and the shared skill', category: 'universal', install: 'prints' },
 ];
 

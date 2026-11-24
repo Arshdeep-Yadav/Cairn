@@ -26,7 +26,27 @@ describe('cairn agent guides', () => {
     expect(skillDirsForClient('claude-code')).toEqual(['.claude/skills/cairn']);
     expect(skillDirsForClient('antigravity')).toEqual(['.agents/skills/cairn']);
     expect(skillDirsForClient('opencode')).toEqual(['.agents/skills/cairn']);
+    for (const client of ['hermes', 't3-code', 'pi', 'command-code']) {
+      expect(skillDirsForClient(client)).toEqual(['.agents/skills/cairn']);
+    }
     expect(skillDirsForClient('cursor')).toEqual([]);
+  });
+
+  it('prints stdio MCP config for the additional terminal clients', () => {
+    const temp = fs.mkdtempSync(path.join(os.tmpdir(), 'cairn-connect-'));
+    try {
+      for (const client of ['hermes', 't3-code', 'pi', 'command-code']) {
+        const output = execFileSync(
+          process.execPath,
+          [CLI, 'connect', client, '--dry-run', '--vault', path.join(temp, '.cairn')],
+          { cwd: temp, encoding: 'utf8', windowsHide: true },
+        );
+        expect(output).toContain('mcpServers');
+        expect(output).toContain(client);
+      }
+    } finally {
+      fs.rmSync(temp, { recursive: true, force: true });
+    }
   });
 
   it('installs the skill into both standard locations', () => {

@@ -37,6 +37,10 @@ export function skillDirsForClient(client: string): string[] {
     case 'antigravity':
     case 'opencode':
     case 'omnirush':
+    case 'hermes':
+    case 't3-code':
+    case 'pi':
+    case 'command-code':
     case 'generic':
       return ['.agents/skills/cairn'];
     default:
