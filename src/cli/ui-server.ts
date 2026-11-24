@@ -15,7 +15,7 @@ import {
   serializeCookie,
   type AuthSession,
 } from '../core/auth.js';
-import { CLIENT_SETUPS, detectClientWiring } from './connections.js';
+import { CLIENT_SETUPS, detectClientWiring, mcpCommand } from './connections.js';
 
 export interface UiServerOptions {
   store: Store;
@@ -827,7 +827,7 @@ export async function startUiServer(options: UiServerOptions): Promise<UiServer>
             cwd: process.cwd(),
             notes: store.stats().notes,
             checkedAt: new Date().toISOString(),
-            command: `cairn mcp --vault "${store.vault.dir}" --project ${store.defaultProject} --agent <handle>`,
+            command: mcpCommand(store.vault.dir, store.defaultProject),
             wired,
             clients: CLIENT_SETUPS.map((client) => ({
               ...client,

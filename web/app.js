@@ -8,6 +8,48 @@
 const $ = (selector, root = document) => root.querySelector(selector);
 const $$ = (selector, root = document) => Array.from(root.querySelectorAll(selector));
 
+/* Overlays are siblings of #app, so making the app inert leaves the dialog
+   reachable while removing every background control from the tab order. */
+let overlayPreviousFocus = null;
+
+function activeOverlay() {
+  return $$('.overlay').find((overlay) => !overlay.hidden) || null;
+}
+
+function syncOverlayInert() {
+  const open = Boolean(activeOverlay());
+  const app = $('#app');
+  if (app) app.inert = open;
+  const skip = $('.skip-link');
+  if (skip) skip.inert = open;
+}
+
+function restoreOverlayFocus() {
+  const previous = overlayPreviousFocus;
+  overlayPreviousFocus = null;
+  if (previous && document.contains(previous) && typeof previous.focus === 'function') {
+    previous.focus();
+  }
+}
+
+document.addEventListener('keydown', (event) => {
+  if (event.key !== 'Tab') return;
+  const dialog = activeOverlay()?.querySelector('[role="dialog"]');
+  if (!dialog) return;
+  const focusable = $$('button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])', dialog)
+    .filter((element) => element.getClientRects().length > 0);
+  if (!focusable.length) return;
+  const first = focusable[0];
+  const last = focusable[focusable.length - 1];
+  if (event.shiftKey && document.activeElement === first) {
+    event.preventDefault();
+    last.focus();
+  } else if (!event.shiftKey && document.activeElement === last) {
+    event.preventDefault();
+    first.focus();
+  }
+});
+
 const KIND_META = {
   decision: { label: 'Decision', icon: 'i-decision' },
   change: { label: 'Change', icon: 'i-change' },
@@ -1909,7 +1951,9 @@ const PALETTE_COMMANDS = [
 function openPalette(prefill = '') {
   const overlay = $('#palette');
   if (!overlay) return;
+  overlayPreviousFocus = document.activeElement;
   overlay.hidden = false;
+  syncOverlayInert();
   state.palette.open = true;
   state.palette.query = prefill;
   state.palette.notes = [];
@@ -1929,11 +1973,13 @@ function closePalette() {
   const overlay = $('#palette');
   if (!overlay) return;
   overlay.hidden = true;
+  syncOverlayInert();
   state.palette.open = false;
   state.palette.query = '';
   state.palette.notes = [];
   state.palette.active = 0;
   document.body.classList.remove('modal-open');
+  restoreOverlayFocus();
 }
 
 async function searchPalette(query) {
@@ -2079,6 +2125,12 @@ function openCapture(options = {}) {
   const form = $('#capture-form');
   if (!overlay || !form) return;
   form.reset();
+  clearCaptureError();
+  const titleInput = $('#capture-note-title');
+  if (titleInput && !titleInput.dataset.errorBound) {
+    titleInput.dataset.errorBound = '1';
+    titleInput.addEventListener('input', clearCaptureError);
+  }
   const kind = options.kind || 'note';
   const select = $('#capture-kind');
   if (select) {
@@ -2095,7 +2147,9 @@ function openCapture(options = {}) {
   const isMessage = kind === 'message' || kind === 'handoff';
   if (toField) toField.hidden = !isMessage;
   if (toInput && isMessage) toInput.value = options.to || '';
+  overlayPreviousFocus = document.activeElement;
   overlay.hidden = false;
+  syncOverlayInert();
   state.captureOpen = true;
   document.body.classList.add('modal-open');
   setTimeout(() => $('#capture-note-title')?.focus(), 40);
@@ -2105,8 +2159,10 @@ function closeCapture() {
   const overlay = $('#capture');
   if (!overlay) return;
   overlay.hidden = true;
+  syncOverlayInert();
   state.captureOpen = false;
   document.body.classList.remove('modal-open');
+  restoreOverlayFocus();
 }
 
 function bindReveal(button, input) {
@@ -2149,6 +2205,7 @@ function openChangePassword() {
     errorEl.hidden = true;
   }
   overlay.hidden = false;
+  syncOverlayInert();
   state.changePasswordOpen = true;
   document.body.classList.add('modal-open');
   setTimeout(() => $('#cp-current')?.focus(), 40);
@@ -2161,6 +2218,7 @@ function closeChangePassword() {
   const overlay = $('#change-password');
   if (!overlay) return;
   overlay.hidden = true;
+  syncOverlayInert();
   state.changePasswordOpen = false;
   document.body.classList.remove('modal-open');
   const form = $('#change-password-form');
@@ -2243,6 +2301,26 @@ function splitList(value) {
     .filter(Boolean);
 }
 
+function showCaptureError(message) {
+  const errorEl = $('#capture-error');
+  const title = $('#capture-note-title');
+  if (errorEl) {
+    errorEl.textContent = message;
+    errorEl.hidden = false;
+  }
+  title?.setAttribute('aria-invalid', 'true');
+  title?.focus();
+}
+
+function clearCaptureError() {
+  const errorEl = $('#capture-error');
+  if (errorEl) {
+    errorEl.textContent = '';
+    errorEl.hidden = true;
+  }
+  $('#capture-note-title')?.removeAttribute('aria-invalid');
+}
+
 async function submitCapture(event) {
   event.preventDefault();
   const form = $('#capture-form');
@@ -2252,7 +2330,7 @@ async function submitCapture(event) {
   const kind = String(data.get('kind') || 'note');
   const title = String(data.get('title') || '').trim();
   if (!title) {
-    toast('A title is required for every memory.', 'error');
+    showCaptureError('A title is required for every memory.');
     return;
   }
   const payload = {
@@ -2282,7 +2360,7 @@ async function submitCapture(event) {
     await loadOverview(true).catch(() => {});
     if (result.note?.id) selectNote(result.note.id);
   } catch (caught) {
-    toast(caught instanceof Error ? caught.message : 'Could not save the note', 'error');
+    showCaptureError(caught instanceof Error ? caught.message : 'Could not save the note');
   } finally {
     if (submit) {
       submit.disabled = false;
@@ -3273,7 +3351,7 @@ const scheduleLiveRefresh = debounce(async () => {
   if (state.selectedId && inspectorIsOpen()) {
     loadInspector(state.selectedId, true).catch(() => {});
   }
-}, 850);
+}, 200);
 
 async function refreshGraphData() {
   try {

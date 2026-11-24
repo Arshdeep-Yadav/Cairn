@@ -39,8 +39,9 @@ need node
 need npm
 
 node_major="$(node -p "process.versions.node.split('.')[0]" 2>/dev/null || printf '0')"
-if [ "$node_major" -lt 20 ] 2>/dev/null; then
-  fail "Node.js 20 or newer is required (found $(node -v 2>/dev/null || printf 'unknown'))"
+node_minor="$(node -p "process.versions.node.split('.')[1]" 2>/dev/null || printf '0')"
+if [ "$node_major" -lt 20 ] 2>/dev/null || { [ "$node_major" -eq 20 ] && [ "$node_minor" -lt 19 ] 2>/dev/null; }; then
+  fail "Node.js 20.19 or newer is required (found $(node -v 2>/dev/null || printf 'unknown'))"
 fi
 
 tmp="${TMPDIR:-/tmp}/cairn-install.$$"
@@ -55,8 +56,11 @@ else
   need curl
   need tar
   archive="$tmp/cairn.tar.gz"
-  curl -fsSL "https://codeload.github.com/Arshdeep-Yadav/Cairn/tar.gz/refs/heads/$REF" -o "$archive" \
-    || fail "could not download Cairn (ref: $REF)"
+  if ! curl -fsSL "https://codeload.github.com/Arshdeep-Yadav/Cairn/tar.gz/refs/heads/$REF" -o "$archive"; then
+    # CAIRN_REF may be a tag, which lives under refs/tags rather than refs/heads.
+    curl -fsSL "https://codeload.github.com/Arshdeep-Yadav/Cairn/tar.gz/refs/tags/$REF" -o "$archive" \
+      || fail "could not download Cairn (ref: $REF)"
+  fi
   mkdir -p "$src"
   tar -xzf "$archive" -C "$src" --strip-components=1 2>/dev/null \
     || tar -xzf "$archive" -C "$src" 2>/dev/null \
@@ -73,11 +77,12 @@ fi
 
 printf 'Building Cairn from %s (%s)...\n' "$REPO" "$REF"
 cd "$src"
-npm ci --silent 2>/dev/null || npm install --silent
+# Skip prepare/prepack: the explicit build below runs once, not three times.
+npm ci --silent --ignore-scripts 2>/dev/null || npm install --silent --ignore-scripts
 npm run build --silent
 # Install from a packed tarball. `npm install -g .` links to the source folder
 # on some platforms, which breaks when this installer cleans up its temp dir.
-tarball="$(npm pack --silent | tail -n 1)"
+tarball="$(npm pack --silent --ignore-scripts | tail -n 1)"
 [ -f "$tarball" ] || fail "npm pack did not produce a tarball"
 npm install -g "$tarball" --silent
 

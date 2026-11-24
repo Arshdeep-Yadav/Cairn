@@ -7,7 +7,7 @@
 *Notion × Obsidian, but for AI agents. A local, zero-dependency MCP server that records every decision, change, and handoff in human-readable Markdown connected as a living knowledge graph.*
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Node: >=20](https://img.shields.io/badge/node-%3E%3D20-brightgreen.svg)](package.json)
+[![Node: >=20.19](https://img.shields.io/badge/node-%3E%3D20.19-brightgreen.svg)](package.json)
 [![TypeScript: 5.9](https://img.shields.io/badge/TypeScript-5.9-blue.svg)](tsconfig.json)
 [![Zero Native Binaries](https://img.shields.io/badge/dependencies-0%20native-success.svg)](scripts/check-portable.mjs)
 [![Docker Ready](https://img.shields.io/badge/docker-multi--arch-blue.svg)](Dockerfile)
@@ -60,9 +60,9 @@ curl -fsSL https://raw.githubusercontent.com/Arshdeep-Yadav/Cairn/main/install.s
 irm https://raw.githubusercontent.com/Arshdeep-Yadav/Cairn/main/install.ps1 | iex
 ```
 
-npm 12 blocks remote and git package specs by default, so the installer builds a
-local tarball instead of relying on `npx cairn` or a `github:` spec. If you already
-have a checkout, the equivalent is:
+The npm names `cairn` and `cairn-memory` belong to unrelated packages, and npm 12
+blocks dependency install scripts, so the installer builds a local tarball instead
+of relying on `npx cairn`. If you already have a checkout, the equivalent is:
 
 ```bash
 npm ci

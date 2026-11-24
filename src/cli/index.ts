@@ -3,7 +3,6 @@ import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { detectProjectName, findProjectRoot, initVault, resolveVaultDir, vaultExists, CAIRN_VERSION } from '../core/vault.js';
 import { openStore, type Store } from '../core/store.js';
 import { repoRoot } from '../core/git.js';
@@ -15,9 +14,8 @@ import {
 import { redactSecrets } from '../core/redact.js';
 import { renderNote, renderStats, renderTimeline } from '../core/format.js';
 import { humanizeHandle, relativeTime } from '../core/text.js';
-import { createCairnMcpServer } from '../mcp/server.js';
-import { startUiServer, openBrowser } from './ui-server.js';
-import { detectClientWiring } from './connections.js';
+import { detectClientWiring, mcpCommand } from './connections.js';
+import type { UiServer } from './ui-server.js';
 import { ALL_SKILL_DIRS, cairnRuleText, cairnSkillText, skillDirsForClient } from './guides.js';
 import { KINDS, type Kind } from '../core/types.js';
 
@@ -701,6 +699,12 @@ async function commandInit(): Promise<void> {
 }
 
 async function commandMcp(): Promise<void> {
+  // The MCP SDK and zod are only needed by this command. Keep them out of
+  // every other CLI invocation (hooks run on each agent tool call).
+  const [{ createCairnMcpServer }, { StdioServerTransport }] = await Promise.all([
+    import('../mcp/server.js'),
+    import('@modelcontextprotocol/sdk/server/stdio.js'),
+  ]);
   const store = storeFor(opt('agent') || process.env.CAIRN_AGENT || 'coding-agent', {
     autoInit: true,
   });
@@ -720,6 +724,7 @@ async function commandMcp(): Promise<void> {
 }
 
 async function commandUi(): Promise<void> {
+  const { startUiServer } = await import('./ui-server.js');
   const store = storeFor('human', { autoInit: true });
   const host = opt('host') || '127.0.0.1';
   const policy = bindPolicy(host);
@@ -743,7 +748,7 @@ async function commandUi(): Promise<void> {
   print('');
   print('MCP command for clients:');
   print(
-    `  ${quoteShell(process.execPath)} ${quoteShell(cliEntryPath())} mcp --vault ${quoteShell(store.vaultDir)} --project ${quoteShell(store.defaultProject)} --agent <handle>`,
+    `  ${mcpCommand(store.vaultDir, store.defaultProject)}`,
   );
   print('');
   print('Press Ctrl+C to stop.');
@@ -790,7 +795,7 @@ function printWorkspacePanel(store: Store, url: string, password?: string, creat
   print(`  workspace  ${url}`);
   print(`  auth       password required for the workspace and API`);
   print('');
-  print(`  MCP        cairn mcp --vault "${store.vaultDir}" --project ${store.defaultProject} --agent <handle>`);
+  print(`  MCP        ${mcpCommand(store.vaultDir, store.defaultProject)}`);
   if (wiring.length) {
     print(`  wired      ${wiring.map((entry) => `${entry.label} (${entry.file})`).join(', ')}`);
   } else {
@@ -803,6 +808,7 @@ function printWorkspacePanel(store: Store, url: string, password?: string, creat
 }
 
 async function commandStart(): Promise<void> {
+  const { startUiServer, openBrowser } = await import('./ui-server.js');
   const port = num('port', 4242);
   const host = opt('host') || '127.0.0.1';
   const policy = bindPolicy(host);
@@ -832,7 +838,7 @@ async function commandStart(): Promise<void> {
   }
 
   const authInfo = ensureUiAuth(store.vaultDir);
-  let ui;
+  let ui: UiServer;
   try {
     ui = await startUiServer({
       store,
@@ -881,7 +887,7 @@ async function commandStatus(): Promise<void> {
     print(`  memory     ${stats.notes} notes · ${stats.edges} links · ${stats.projects} projects · ${stats.agents} agents`);
     printAuthStatus(vaultDir);
     print('');
-    print(`  MCP        cairn mcp --vault "${store.vaultDir}" --project ${store.defaultProject} --agent <handle>`);
+    print(`  MCP        ${mcpCommand(store.vaultDir, store.defaultProject)}`);
   }
   print(`  workspace  ${health ? `${url} (running)` : `not running — run \`cairn start\``}`);
   if (wiring.length) {

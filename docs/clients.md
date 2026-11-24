@@ -225,7 +225,7 @@ cairn list           # recent notes as seen from this directory
 cairn context        # the same brief agents get on session start
 ```
 
-`status` also shows the exact MCP command to paste into any client. The workspace UI repeats it with a copy button on the **Connect agents** page and on **Agents**.
+`status` also shows the MCP command to paste into any client: absolute paths, and `<handle>` replaced with your client's name (for example `claude-code`). The workspace UI repeats it with a copy button on the **Connect agents** page and on **Agents**.
 
 `doctor` never creates or modifies anything. If it reports "no vault found", run `cairn init` (or `connect`, which inits as a side effect) first.
 

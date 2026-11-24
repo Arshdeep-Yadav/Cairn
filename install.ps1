@@ -15,10 +15,10 @@ if ($args -contains '--uninstall' -or $env:CAIRN_UNINSTALL -eq '1') {
   exit 0
 }
 
-if (-not (Get-Command node -ErrorAction SilentlyContinue)) { throw 'Node.js 20+ is required.' }
+if (-not (Get-Command node -ErrorAction SilentlyContinue)) { throw 'Node.js 20.19+ is required.' }
 if (-not (Get-Command npm -ErrorAction SilentlyContinue)) { throw 'npm is required.' }
-$nodeMajor = [int](node -p "process.versions.node.split('.')[0]")
-if ($nodeMajor -lt 20) { throw "Node.js 20 or newer is required (found $(node -v))." }
+$nodeVersion = [version](node -p "process.versions.node")
+if ($nodeVersion -lt [version]'20.19.0') { throw "Node.js 20.19 or newer is required (found $nodeVersion)." }
 
 $tmp = Join-Path $env:TEMP ("cairn-install-" + [guid]::NewGuid().ToString('N'))
 New-Item -ItemType Directory -Path $tmp -Force | Out-Null
@@ -32,7 +32,12 @@ try {
     if ($LASTEXITCODE -ne 0) { throw "Could not clone Cairn (ref: $Ref)." }
   } else {
     $zip = Join-Path $tmp 'cairn.zip'
-    Invoke-WebRequest -UseBasicParsing -Uri "https://codeload.github.com/Arshdeep-Yadav/Cairn/zip/refs/heads/$Ref" -OutFile $zip
+    try {
+      Invoke-WebRequest -UseBasicParsing -Uri "https://codeload.github.com/Arshdeep-Yadav/Cairn/zip/refs/heads/$Ref" -OutFile $zip
+    } catch {
+      # CAIRN_REF may be a tag, which lives under refs/tags rather than refs/heads.
+      Invoke-WebRequest -UseBasicParsing -Uri "https://codeload.github.com/Arshdeep-Yadav/Cairn/zip/refs/tags/$Ref" -OutFile $zip
+    }
     Expand-Archive -Path $zip -DestinationPath $tmp -Force
     $source = Get-ChildItem -Path $tmp -Directory -Filter 'Cairn-*' | Select-Object -First 1
     if (-not $source) { throw 'Could not find the extracted Cairn source.' }
@@ -43,13 +48,14 @@ try {
 
   Write-Host "Building Cairn from GitHub ($Ref)…"
   Push-Location $source
-  npm ci --silent
-  if ($LASTEXITCODE -ne 0) { npm install --silent }
+  # Skip prepare/prepack: the explicit build below runs once, not three times.
+  npm ci --silent --ignore-scripts
+  if ($LASTEXITCODE -ne 0) { npm install --silent --ignore-scripts }
   npm run build --silent
   if ($LASTEXITCODE -ne 0) { throw 'Build failed.' }
   # Install from a packed tarball. `npm install -g .` links to the source folder
   # on Windows, which breaks when this installer cleans up its temp directory.
-  $packed = npm pack --silent
+  $packed = npm pack --silent --ignore-scripts
   $tarball = $packed | Where-Object { $_ -like '*.tgz' } | Select-Object -Last 1
   if (-not $tarball -or -not (Test-Path $tarball)) { throw 'npm pack did not produce a tarball.' }
   npm install -g (Join-Path (Get-Location).Path $tarball) --silent

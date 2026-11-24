@@ -44,6 +44,11 @@ ready(() => {
   const capsHint = document.getElementById('caps-hint');
   const status = document.getElementById('server-status');
   const statusFoot = status?.closest('.form-foot');
+  const loading = document.getElementById('auth-loading');
+
+  function hideLoading() {
+    if (loading) loading.hidden = true;
+  }
 
   const mustChangeForm = document.getElementById('must-change-form');
   const currentPassword = document.getElementById('current-password');
@@ -54,6 +59,7 @@ ready(() => {
   const revealCurrent = document.getElementById('reveal-current');
   const revealConfirm = document.getElementById('reveal-confirm');
   const mustChangeError = document.getElementById('must-change-error');
+  const mustCapsHint = document.getElementById('must-caps-hint');
   const mustFields = [currentPassword, newPassword, confirmPassword];
 
   function setStatus(text, state) {
@@ -97,6 +103,7 @@ ready(() => {
   }
 
   function showMustChange(prefill) {
+    hideLoading();
     if (loginView) loginView.hidden = true;
     if (mustChangeView) mustChangeView.hidden = false;
     if (prefill && currentPassword && !currentPassword.value) {
@@ -122,6 +129,7 @@ ready(() => {
         showMustChange();
         return;
       }
+      hideLoading();
       if (loginView) loginView.hidden = false;
       password?.focus();
       setStatus(`Workspace ${data.version || ''} ready · password required`.replace('  ', ' '), 'online');
@@ -129,6 +137,7 @@ ready(() => {
     .catch(() => {
       // Status could not be read: fall back to the sign-in form rather than an
       // empty card, and explain why in the footer.
+      hideLoading();
       if (loginView) loginView.hidden = false;
       setStatus('Workspace unreachable — is `cairn start` still running?', 'offline');
     });
@@ -138,15 +147,23 @@ ready(() => {
   bindReveal(revealNew, newPassword);
   bindReveal(revealConfirm, confirmPassword);
 
-  const capsCheck = (event) => {
+  const capsCheck = (event, hint) => {
     if (typeof event.getModifierState !== 'function') return;
-    if (capsHint) capsHint.hidden = !event.getModifierState('CapsLock');
+    if (hint) hint.hidden = !event.getModifierState('CapsLock');
   };
-  password?.addEventListener('keydown', capsCheck);
-  password?.addEventListener('keyup', capsCheck);
+  for (const input of [password, ...mustFields]) {
+    const hint = input === password ? capsHint : mustCapsHint;
+    input?.addEventListener('keydown', (event) => capsCheck(event, hint));
+    input?.addEventListener('keyup', (event) => capsCheck(event, hint));
+  }
 
   password?.addEventListener('input', () => {
     if (errorBox && !errorBox.hidden) clearError(errorBox, password);
+  });
+  mustFields.forEach((input) => {
+    input?.addEventListener('input', () => {
+      if (mustChangeError && !mustChangeError.hidden) clearError(mustChangeError, input);
+    });
   });
 
   form?.addEventListener('submit', async (event) => {
@@ -188,7 +205,7 @@ ready(() => {
         showError(errorBox, password, payload?.error || 'Too many failed attempts. Wait a few minutes and try again.');
         setStatus('Login temporarily locked', 'offline');
       } else if (response.status === 401) {
-        showError(errorBox, password, 'Incorrect password. Check the value printed by `cairn start`.');
+        showError(errorBox, password, 'Incorrect password. On first login, use the generated password printed by `cairn start`.');
         setStatus('Workspace ready · password required', 'online');
       } else {
         showError(errorBox, password, payload?.error || `Could not unlock the workspace (${response.status}).`);

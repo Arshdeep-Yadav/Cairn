@@ -47,11 +47,18 @@
           <span class="brand-word">Cairn</span>
         </div>
 
+        <div id="auth-loading" role="status" aria-label="Checking the workspace">
+          <div class="skeleton-line skeleton-line--title"></div>
+          <div class="skeleton-line skeleton-line--field"></div>
+          <div class="skeleton-line skeleton-line--field"></div>
+          <p class="form-help">Checking the workspace…</p>
+        </div>
+
         <div id="login-view" hidden>
           <div class="form-head">
             <p class="form-eyebrow">Protected workspace</p>
             <h1 id="login-title">Unlock Cairn</h1>
-            <p class="form-sub" id="login-sub">Enter the workspace password printed by <code>cairn start</code>.</p>
+            <p class="form-sub" id="login-sub">Enter your workspace password.</p>
           </div>
 
           <form id="login-form" class="login-form" novalidate>
@@ -68,7 +75,7 @@
             </label>
 
             <p class="caps-hint" id="caps-hint" hidden>Caps Lock is on</p>
-            <p class="form-error" id="login-error" role="alert" aria-live="polite" hidden></p>
+            <p class="form-error" id="login-error" role="alert" hidden></p>
 
             <button class="submit" id="submit" type="submit">
               <span class="submit-label">Unlock workspace</span>
@@ -123,8 +130,9 @@
               </span>
             </label>
 
+            <p class="caps-hint" id="must-caps-hint" hidden>Caps Lock is on</p>
             <p class="form-hint">Use 12+ characters. A mix of letters, numbers, and symbols is best.</p>
-            <p class="form-error" id="must-change-error" role="alert" aria-live="polite" hidden></p>
+            <p class="form-error" id="must-change-error" role="alert" hidden></p>
 
             <button class="submit" id="must-change-submit" type="submit">
               <span class="submit-label">Save password &amp; open workspace</span>

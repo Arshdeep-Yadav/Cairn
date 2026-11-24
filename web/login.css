@@ -7,8 +7,8 @@
   --surface-2: #f9f6ef;
   --ink: #211e18;
   --ink-2: #5c5549;
-  --ink-3: #8b8272;
-  --ink-4: #b3aa98;
+  --ink-3: #6b6355;
+  --ink-4: #746c5e;
   --line: #e4ded0;
   --line-strong: #d4ccba;
   --accent: #b3542b;
@@ -39,7 +39,7 @@
     --surface-2: #201c17;
     --ink: #f1ece1;
     --ink-2: #b8ae9d;
-    --ink-3: #8a8171;
+    --ink-3: #938a79;
     --ink-4: #5f584c;
     --line: #302b23;
     --line-strong: #423a2f;
@@ -63,8 +63,8 @@
   --surface-2: #f9f6ef;
   --ink: #211e18;
   --ink-2: #5c5549;
-  --ink-3: #8b8272;
-  --ink-4: #b3aa98;
+  --ink-3: #6b6355;
+  --ink-4: #746c5e;
   --line: #e4ded0;
   --line-strong: #d4ccba;
   --accent: #b3542b;
@@ -86,7 +86,7 @@
   --surface-2: #201c17;
   --ink: #f1ece1;
   --ink-2: #b8ae9d;
-  --ink-3: #8a8171;
+  --ink-3: #938a79;
   --ink-4: #5f584c;
   --line: #302b23;
   --line-strong: #423a2f;
@@ -455,6 +455,17 @@ code {
   font-size: 11px;
   line-height: 1.5;
 }
+
+#auth-loading { display: grid; gap: 12px; margin-top: 4px; }
+#auth-loading[hidden] { display: none; }
+.skeleton-line {
+  height: 12px; border-radius: 6px; background: var(--line);
+  animation: skeleton-pulse 1.3s var(--ease) infinite;
+}
+.skeleton-line--title { width: 64%; height: 30px; }
+.skeleton-line--field { height: 50px; border-radius: var(--radius-md); }
+@keyframes skeleton-pulse { 50% { opacity: .45; } }
+@media (prefers-reduced-motion: reduce) { .skeleton-line { animation: none; } }
 
 /* Keep the inline command quiet so it does not inflate the field label. */
 .field-label code {

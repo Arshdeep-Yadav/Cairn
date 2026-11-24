@@ -12,6 +12,7 @@
   <script src="/app.js" defer></script>
 </head>
 <body>
+<a class="skip-link" href="#view">Skip to content</a>
 <svg class="svg-sprite" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
   <symbol id="i-home" viewBox="0 0 24 24"><path d="M4 10.5 12 4l8 6.5V20a1 1 0 0 1-1 1h-4.5v-6h-5v6H5a1 1 0 0 1-1-1z"/></symbol>
   <symbol id="i-graph" viewBox="0 0 24 24"><circle cx="6" cy="7" r="2.4"/><circle cx="18" cy="6" r="2.4"/><circle cx="12" cy="18" r="2.4"/><path d="m8.1 8.3 7.6-1.6M7.2 9.1l3.6 6.8M16.8 8.2l-3.5 7.7"/></symbol>
@@ -196,7 +197,7 @@
       </div>
     </header>
 
-    <main class="view" id="view" tabindex="-1" aria-live="polite"></main>
+    <main class="view" id="view" tabindex="-1"></main>
   </div>
 
   <div class="inspector-scrim" data-action="close-inspector"></div>
@@ -236,7 +237,7 @@
         <svg class="icon"><use href="#i-close"/></svg>
       </button>
     </div>
-    <form id="capture-form" class="capture-form">
+    <form id="capture-form" class="capture-form" novalidate>
       <div class="form-row form-row--split">
         <label class="field">
           <span class="field-label">Kind</span>
@@ -261,8 +262,9 @@
       </div>
       <label class="field">
         <span class="field-label">Title</span>
-        <input name="title" id="capture-note-title" type="text" placeholder="What changed, and why?" required maxlength="180" autocomplete="off">
+        <input name="title" id="capture-note-title" type="text" placeholder="What changed, and why?" required maxlength="180" autocomplete="off" aria-describedby="capture-error">
       </label>
+      <p class="form-error" id="capture-error" role="alert" hidden></p>
       <label class="field">
         <span class="field-label">Body <em>Markdown / wikilinks</em></span>
         <textarea name="body" id="capture-body" rows="7" placeholder="Context, alternatives considered, links to [[other notes]]…"></textarea>
@@ -312,7 +314,7 @@
         <svg class="icon"><use href="#i-close"/></svg>
       </button>
     </div>
-    <form id="change-password-form" class="capture-form">
+    <form id="change-password-form" class="capture-form" novalidate>
       <label class="field">
         <span class="field-label">Current password</span>
         <div class="password-field">
@@ -335,7 +337,7 @@
           <button class="reveal" type="button" aria-label="Show password" aria-pressed="false"><svg class="icon icon-eye" viewBox="0 0 24 24" aria-hidden="true"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg><svg class="icon icon-eye-off" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3l18 18"/><path d="M10.6 5.9A9.8 9.8 0 0 1 12 5.8c6 0 9.5 6.2 9.5 6.2a17 17 0 0 1-2.6 3.4"/><path d="M6.3 7.5A17.6 17.6 0 0 0 2.5 12S6 18.2 12 18.2a9.6 9.6 0 0 0 4.1-.9"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/></svg></button>
         </div>
       </label>
-      <p class="form-error" id="cp-error" role="alert" aria-live="polite" hidden></p>
+      <p class="form-error" id="cp-error" role="alert" hidden></p>
       <div class="capture-actions">
         <span class="capture-hint">All active sessions will be signed out.</span>
         <button type="button" class="btn" data-action="close-change-password">Cancel</button>

@@ -34,6 +34,16 @@ export interface WiredClient {
 }
 
 /**
+ * MCP command shown to humans. Uses absolute paths because GUI-launched clients
+ * do not inherit npm's global bin directory on PATH.
+ */
+export function mcpCommand(vaultDir: string, project: string, agent = '<handle>'): string {
+  const quote = (value: string) => `"${value.replace(/"/g, '\\"')}"`;
+  const entry = path.resolve(import.meta.dirname, 'index.js');
+  return `${quote(process.execPath)} ${quote(entry)} mcp --vault ${quote(vaultDir)} --project ${quote(project)} --agent ${agent}`;
+}
+
+/**
  * Inspect the current directory for client configs that already point at Cairn.
  * Read-only: never creates or rewrites anything.
  */
