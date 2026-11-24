@@ -1106,7 +1106,10 @@ function serveAsset(
     return;
   }
 
-  const cacheControl = relative.endsWith('.html') ? 'no-cache' : 'public, max-age=3600';
+  // Localhost assets must revalidate: after `npm i -g cairn@latest` an hour of
+  // stale app.js against a new server API is a broken UI. The ETag keeps
+  // revalidation cheap (304, no body).
+  const cacheControl = 'no-cache';
   if (request.headers['if-none-match'] === cached.etag) {
     response.writeHead(304, {
       ETag: cached.etag,

@@ -47,7 +47,7 @@
           <span class="brand-word">Cairn</span>
         </div>
 
-        <div id="login-view">
+        <div id="login-view" hidden>
           <div class="form-head">
             <p class="form-eyebrow">Protected workspace</p>
             <h1 id="login-title">Unlock Cairn</h1>
@@ -92,6 +92,10 @@
               <span class="input-wrap">
                 <svg class="input-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 10V7a5 5 0 0 1 10 0v3"/><rect x="4.5" y="10" width="15" height="10.5" rx="2.5"/><path d="M12 14.5v2.8"/></svg>
                 <input id="current-password" name="current" type="password" inputmode="text" autocomplete="current-password" spellcheck="false" autocapitalize="none" required aria-describedby="must-change-error">
+                <button class="reveal" id="reveal-current" type="button" aria-label="Show generated password" aria-pressed="false">
+                  <svg class="icon-eye" viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 12S6 5.8 12 5.8 21.5 12 21.5 12 18 18.2 12 18.2 2.5 12 2.5 12Z"/><circle cx="12" cy="12" r="3.2"/></svg>
+                  <svg class="icon-eye-off" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3l18 18"/><path d="M10.6 5.9A9.8 9.8 0 0 1 12 5.8c6 0 9.5 6.2 9.5 6.2a17 17 0 0 1-2.6 3.4"/><path d="M6.3 7.5A17.6 17.6 0 0 0 2.5 12S6 18.2 12 18.2a9.6 9.6 0 0 0 4.1-.9"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/></svg>
+                </button>
               </span>
             </label>
 
@@ -112,6 +116,10 @@
               <span class="input-wrap">
                 <svg class="input-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 10V7a5 5 0 0 1 10 0v3"/><rect x="4.5" y="10" width="15" height="10.5" rx="2.5"/><path d="M12 14.5v2.8"/></svg>
                 <input id="confirm-password" name="confirm" type="password" inputmode="text" autocomplete="new-password" spellcheck="false" autocapitalize="none" minlength="12" required aria-describedby="must-change-error">
+                <button class="reveal" id="reveal-confirm" type="button" aria-label="Show confirmed password" aria-pressed="false">
+                  <svg class="icon-eye" viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 12S6 5.8 12 5.8 21.5 12 21.5 12 18 18.2 12 18.2 2.5 12 2.5 12Z"/><circle cx="12" cy="12" r="3.2"/></svg>
+                  <svg class="icon-eye-off" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3l18 18"/><path d="M10.6 5.9A9.8 9.8 0 0 1 12 5.8c6 0 9.5 6.2 9.5 6.2a17 17 0 0 1-2.6 3.4"/><path d="M6.3 7.5A17.6 17.6 0 0 0 2.5 12S6 18.2 12 18.2a9.6 9.6 0 0 0 4.1-.9"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/></svg>
+                </button>
               </span>
             </label>
 
@@ -126,6 +134,10 @@
 
           <p class="form-help">Only one login with the generated password is allowed. It stops working once you set a new one.</p>
         </div>
+
+        <noscript>
+          <p class="form-help" style="margin-top:16px">Cairn's workspace needs JavaScript to sign in. Enable it for this page and reload.</p>
+        </noscript>
 
         <div class="form-foot">
           <span class="status-dot" aria-hidden="true"></span>

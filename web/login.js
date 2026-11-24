@@ -51,7 +51,10 @@ ready(() => {
   const confirmPassword = document.getElementById('confirm-password');
   const mustChangeSubmit = document.getElementById('must-change-submit');
   const revealNew = document.getElementById('reveal-new');
+  const revealCurrent = document.getElementById('reveal-current');
+  const revealConfirm = document.getElementById('reveal-confirm');
   const mustChangeError = document.getElementById('must-change-error');
+  const mustFields = [currentPassword, newPassword, confirmPassword];
 
   function setStatus(text, state) {
     if (status) status.textContent = text;
@@ -99,8 +102,12 @@ ready(() => {
     if (prefill && currentPassword && !currentPassword.value) {
       currentPassword.value = prefill;
     }
+    // Do not keep the generated password in the now-hidden sign-in field.
+    if (password) password.value = '';
     setStatus('First login — choose a permanent password', 'online');
-    currentPassword?.focus();
+    // Straight to the field that still needs work once the generated password
+    // is already filled in.
+    (prefill || currentPassword?.value ? newPassword : currentPassword)?.focus();
   }
 
   // If the workspace is already unlocked, skip straight in.
@@ -115,14 +122,21 @@ ready(() => {
         showMustChange();
         return;
       }
+      if (loginView) loginView.hidden = false;
+      password?.focus();
       setStatus(`Workspace ${data.version || ''} ready · password required`.replace('  ', ' '), 'online');
     })
     .catch(() => {
+      // Status could not be read: fall back to the sign-in form rather than an
+      // empty card, and explain why in the footer.
+      if (loginView) loginView.hidden = false;
       setStatus('Workspace unreachable — is `cairn start` still running?', 'offline');
     });
 
   bindReveal(reveal, password);
+  bindReveal(revealCurrent, currentPassword);
   bindReveal(revealNew, newPassword);
+  bindReveal(revealConfirm, confirmPassword);
 
   const capsCheck = (event) => {
     if (typeof event.getModifierState !== 'function') return;
@@ -185,14 +199,19 @@ ready(() => {
       setStatus('Workspace unreachable', 'offline');
     } finally {
       setBusy(submit, password, false);
-      password.focus();
-      password.select();
+      // The form may have been replaced by the first-run view; only restore
+      // focus when the sign-in form is still the one on screen.
+      if (!loginView?.hidden) {
+        password.focus();
+        password.select();
+      }
     }
   });
 
   mustChangeForm?.addEventListener('submit', async (event) => {
     event.preventDefault();
     clearError(mustChangeError, newPassword);
+    mustFields.forEach((input) => input?.removeAttribute('aria-invalid'));
     const current = currentPassword.value;
     const next = newPassword.value;
     const confirm = confirmPassword.value;
@@ -209,6 +228,7 @@ ready(() => {
       return;
     }
     setBusy(mustChangeSubmit, newPassword, true);
+    mustFields.forEach((input) => { if (input) input.readOnly = true; });
     setStatus('Saving your password…');
     try {
       const response = await fetch('/api/auth/must-change', {
@@ -247,8 +267,7 @@ ready(() => {
       setStatus('Workspace unreachable', 'offline');
     } finally {
       setBusy(mustChangeSubmit, newPassword, false);
-      newPassword.focus();
-      newPassword.select();
+      mustFields.forEach((input) => { if (input) input.readOnly = false; });
     }
   });
 });

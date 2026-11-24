@@ -305,6 +305,7 @@ code {
   position: relative;
   display: flex;
   align-items: center;
+  width: 100%;
 }
 
 .input-icon {
@@ -320,7 +321,9 @@ code {
   pointer-events: none;
 }
 
-#password {
+/* Every password input on this page shares one control, including the three
+   first-run fields. Without this they fall back to tiny native inputs. */
+.input-wrap input {
   width: 100%;
   height: 50px;
   padding: 0 48px 0 42px;
@@ -333,15 +336,14 @@ code {
   letter-spacing: .01em;
   outline: none;
   transition: border-color .15s var(--ease), box-shadow .15s var(--ease), background .15s;
-  -webkit-text-security: none;
 }
-#password::placeholder { color: var(--ink-4); }
-#password:focus {
+.input-wrap input::placeholder { color: var(--ink-4); }
+.input-wrap input:focus {
   border-color: color-mix(in srgb, var(--accent) 70%, var(--line-strong));
   background: var(--surface);
   box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 13%, transparent);
 }
-#password[aria-invalid="true"] {
+.input-wrap input[aria-invalid="true"] {
   border-color: var(--danger);
   box-shadow: 0 0 0 4px color-mix(in srgb, var(--danger) 12%, transparent);
 }
@@ -448,13 +450,21 @@ code {
 }
 
 .form-hint {
-  margin: 2px 0 0;
+  margin: 0;
   color: var(--ink-3);
   font-size: 11px;
   line-height: 1.5;
 }
 
-#must-change-view .field + .field { margin-top: 14px; }
+/* Keep the inline command quiet so it does not inflate the field label. */
+.field-label code {
+  padding: 0;
+  border: 0;
+  background: none;
+  font-size: .95em;
+  color: var(--ink-3);
+}
+
 #must-change-view[hidden] { display: none; }
 
 .form-foot {

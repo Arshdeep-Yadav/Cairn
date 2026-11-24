@@ -166,6 +166,11 @@ describe('workspace authentication', () => {
     expect(loginPage.status).toBe(200);
     expect(await loginPage.text()).toContain('Unlock Cairn');
 
+    // A stale app.js after an upgrade breaks the UI; assets must revalidate.
+    const script = await fetch(`${ui.url}/login.js`);
+    expect(script.status).toBe(200);
+    expect(script.headers.get('cache-control')).toBe('no-cache');
+
     const status = await fetch(`${ui.url}/api/auth/status`);
     expect(status.status).toBe(200);
     expect(await status.json()).toMatchObject({ authenticated: false });
