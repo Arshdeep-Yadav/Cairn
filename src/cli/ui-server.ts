@@ -89,6 +89,23 @@ function error(response: http.ServerResponse, status: number, message: string, c
   json(response, status, code ? { error: message, code } : { error: message });
 }
 
+/**
+ * Reject a request that may still have an unread body. Returning early without
+ * draining it leaves the keep-alive socket in a bad state: the next request on
+ * the same connection can stall until the client times it out. `resume()` reads
+ * and discards the rest so the response and connection stay clean.
+ */
+function reject(
+  request: http.IncomingMessage,
+  response: http.ServerResponse,
+  status: number,
+  message: string,
+  code?: string,
+): void {
+  if (!request.readableEnded && !request.destroyed) request.resume();
+  error(response, status, message, code);
+}
+
 function redirect(response: http.ServerResponse, location: string): void {
   response.writeHead(302, {
     Location: location,
@@ -466,11 +483,11 @@ export async function startUiServer(options: UiServerOptions): Promise<UiServer>
       const rawHostHeader = String(request.headers.host || '');
       const hostname = parseHostHeader(rawHostHeader);
       if (!hostname) {
-        error(response, 400, 'Invalid or missing Host header.');
+        reject(request, response, 400, 'Invalid or missing Host header.');
         return;
       }
       if (!allowedHosts.has(normalizeHostname(hostname))) {
-        error(response, 403, 'This workspace is not configured for that host.', 'bad_host');
+        reject(request, response, 403, 'This workspace is not configured for that host.', 'bad_host');
         return;
       }
 
@@ -496,7 +513,7 @@ export async function startUiServer(options: UiServerOptions): Promise<UiServer>
 
       const unsafe = checkUnsafeRequest(request, allowedHosts);
       if (unsafe && method !== 'GET' && method !== 'HEAD') {
-        error(response, unsafe.status, unsafe.message, unsafe.code);
+        reject(request, response, unsafe.status, unsafe.message, unsafe.code);
         return;
       }
 
@@ -507,7 +524,7 @@ export async function startUiServer(options: UiServerOptions): Promise<UiServer>
 
       if (!isPublicApi && !session) {
         if (pathname.startsWith('/api/')) {
-          error(response, 401, 'Authentication required.', 'unauthenticated');
+          reject(request, response, 401, 'Authentication required.', 'unauthenticated');
           return;
         }
         if (pathname === '/' || pathname === '/index.html') {
@@ -515,14 +532,14 @@ export async function startUiServer(options: UiServerOptions): Promise<UiServer>
           return;
         }
         if (PRIVATE_ASSETS.has(pathname)) {
-          error(response, 401, 'Authentication required.', 'unauthenticated');
+          reject(request, response, 401, 'Authentication required.', 'unauthenticated');
           return;
         }
       }
 
       if (pathname === '/api/health') {
         if (method !== 'GET' && method !== 'HEAD') {
-          error(response, 405, 'Method not allowed');
+          reject(request, response, 405, 'Method not allowed');
           return;
         }
         json(response, 200, { ok: true, version: CAIRN_VERSION });
@@ -531,7 +548,7 @@ export async function startUiServer(options: UiServerOptions): Promise<UiServer>
 
       if (isStatus) {
         if (method !== 'GET' && method !== 'HEAD') {
-          error(response, 405, 'Method not allowed');
+          reject(request, response, 405, 'Method not allowed');
           return;
         }
         json(response, 200, {
@@ -545,18 +562,18 @@ export async function startUiServer(options: UiServerOptions): Promise<UiServer>
 
       if (isLogin) {
         if (method !== 'POST') {
-          error(response, 405, 'Method not allowed');
+          reject(request, response, 405, 'Method not allowed');
           return;
         }
         if (contentKind(request) !== 'application/json') {
-          error(response, 415, 'Content-Type must be application/json.', 'unsupported_media_type');
+          reject(request, response, 415, 'Content-Type must be application/json.', 'unsupported_media_type');
           return;
         }
         const key = clientAddress(request);
         const retryAfter = limiter.retryAfter(key);
         if (retryAfter > 0) {
           response.setHeader('Retry-After', String(retryAfter));
-          error(response, 429, `Too many failed attempts. Try again in ${retryAfter} seconds.`, 'rate_limited');
+          reject(request, response, 429, `Too many failed attempts. Try again in ${retryAfter} seconds.`, 'rate_limited');
           return;
         }
         const body = (await readBody(request)) as Record<string, unknown>;
@@ -573,7 +590,7 @@ export async function startUiServer(options: UiServerOptions): Promise<UiServer>
             );
             return;
           }
-          error(response, 401, 'Incorrect password.', 'bad_password');
+          reject(request, response, 401, 'Incorrect password.', 'bad_password');
           return;
         }
         limiter.success(key);
@@ -582,7 +599,7 @@ export async function startUiServer(options: UiServerOptions): Promise<UiServer>
         // real password. Refuse the session and tell the client to show the
         // reset challenge. Only `/api/auth/must-change` can authenticate here.
         if (auth.mustChangePassword()) {
-          error(response, 403, 'A new password is required before the workspace can be used.', 'must_change');
+          reject(request, response, 403, 'A new password is required before the workspace can be used.', 'must_change');
           return;
         }
         const created = auth.createSession();
@@ -599,7 +616,7 @@ export async function startUiServer(options: UiServerOptions): Promise<UiServer>
       const publicAsset = PUBLIC_ASSETS.get(pathname);
       if (publicAsset) {
         if (method !== 'GET' && method !== 'HEAD') {
-          error(response, 405, 'Method not allowed');
+          reject(request, response, 405, 'Method not allowed');
           return;
         }
         if (session && (pathname === '/login' || pathname === '/login.html')) {
@@ -616,14 +633,14 @@ export async function startUiServer(options: UiServerOptions): Promise<UiServer>
       // requires the generated password, which is printed on first run.
       if (pathname === '/api/auth/must-change' && method === 'POST') {
         if (contentKind(request) !== 'application/json') {
-          error(response, 415, 'Content-Type must be application/json.', 'unsupported_media_type');
+          reject(request, response, 415, 'Content-Type must be application/json.', 'unsupported_media_type');
           return;
         }
         const key = clientAddress(request);
         const retryAfter = limiter.retryAfter(key);
         if (retryAfter > 0) {
           response.setHeader('Retry-After', String(retryAfter));
-          error(response, 429, `Too many failed attempts. Try again in ${retryAfter} seconds.`, 'rate_limited');
+          reject(request, response, 429, `Too many failed attempts. Try again in ${retryAfter} seconds.`, 'rate_limited');
           return;
         }
         if (!auth.mustChangePassword()) {
@@ -646,13 +663,13 @@ export async function startUiServer(options: UiServerOptions): Promise<UiServer>
             );
             return;
           }
-          error(response, 401, 'Incorrect password.', 'bad_password');
+          reject(request, response, 401, 'Incorrect password.', 'bad_password');
           return;
         }
         try {
           auth.setPassword(next);
         } catch (err) {
-          error(response, 400, (err as Error).message || 'Invalid password.', 'bad_password');
+          reject(request, response, 400, (err as Error).message || 'Invalid password.', 'bad_password');
           return;
         }
         limiter.success(key);
@@ -668,7 +685,7 @@ export async function startUiServer(options: UiServerOptions): Promise<UiServer>
 
       // From here on every route requires a valid session.
       if (!session) {
-        error(response, 401, 'Authentication required.', 'unauthenticated');
+        reject(request, response, 401, 'Authentication required.', 'unauthenticated');
         return;
       }
 
@@ -676,11 +693,11 @@ export async function startUiServer(options: UiServerOptions): Promise<UiServer>
       // to be verified inline (the new session is created after password change).
       if (pathname === '/api/auth/change-password') {
         if (method !== 'POST') {
-          error(response, 405, 'Method not allowed');
+          reject(request, response, 405, 'Method not allowed');
           return;
         }
         if (contentKind(request) !== 'application/json') {
-          error(response, 415, 'Content-Type must be application/json.', 'unsupported_media_type');
+          reject(request, response, 415, 'Content-Type must be application/json.', 'unsupported_media_type');
           return;
         }
         const header = request.headers['x-cairn-csrf'];
@@ -692,27 +709,27 @@ export async function startUiServer(options: UiServerOptions): Promise<UiServer>
           csrfHeader !== csrfCookie ||
           !auth.verifyCsrf(session, csrfHeader)
         ) {
-          error(response, 403, 'Invalid or missing CSRF token.', 'bad_csrf');
+          reject(request, response, 403, 'Invalid or missing CSRF token.', 'bad_csrf');
           return;
         }
         const body = (await readBody(request)) as Record<string, unknown>;
         const current = typeof body.current === 'string' ? body.current : '';
         const next = typeof body.next === 'string' ? body.next : '';
         if (!current || !next) {
-          error(response, 400, 'Current and new password are required.', 'bad_request');
+          reject(request, response, 400, 'Current and new password are required.', 'bad_request');
           return;
         }
         if (!auth.verifyPassword(current)) {
           // 400 (not 401): the session is valid — this is a bad request, and a
           // 401 would make the client's api() helper redirect to /login instead
           // of surfacing the inline "Incorrect current password" error.
-          error(response, 400, 'Incorrect current password.', 'bad_password');
+          reject(request, response, 400, 'Incorrect current password.', 'bad_password');
           return;
         }
         try {
           auth.setPassword(next);
         } catch (err) {
-          error(response, 400, (err as Error).message || 'Invalid password.', 'bad_password');
+          reject(request, response, 400, (err as Error).message || 'Invalid password.', 'bad_password');
           return;
         }
         const created = auth.createSession();
@@ -727,7 +744,7 @@ export async function startUiServer(options: UiServerOptions): Promise<UiServer>
 
       if (method !== 'GET' && method !== 'HEAD') {
         if (contentKind(request) !== 'application/json') {
-          error(response, 415, 'Content-Type must be application/json.', 'unsupported_media_type');
+          reject(request, response, 415, 'Content-Type must be application/json.', 'unsupported_media_type');
           return;
         }
         const header = request.headers['x-cairn-csrf'];
@@ -739,14 +756,14 @@ export async function startUiServer(options: UiServerOptions): Promise<UiServer>
           csrfHeader !== csrfCookie ||
           !auth.verifyCsrf(session, csrfHeader)
         ) {
-          error(response, 403, 'Invalid or missing CSRF token.', 'bad_csrf');
+          reject(request, response, 403, 'Invalid or missing CSRF token.', 'bad_csrf');
           return;
         }
       }
 
       if (pathname === '/api/auth/session') {
         if (method !== 'GET' && method !== 'HEAD') {
-          error(response, 405, 'Method not allowed');
+          reject(request, response, 405, 'Method not allowed');
           return;
         }
         const csrfToken = auth.csrfForSession(session);
@@ -772,7 +789,7 @@ export async function startUiServer(options: UiServerOptions): Promise<UiServer>
 
       if (pathname === '/api/auth/logout') {
         if (method !== 'POST') {
-          error(response, 405, 'Method not allowed');
+          reject(request, response, 405, 'Method not allowed');
           return;
         }
         auth.revoke(context.sessionToken);
@@ -868,7 +885,7 @@ export async function startUiServer(options: UiServerOptions): Promise<UiServer>
         if (noteMatch && !noteMatch[2] && method === 'GET') {
           const result = store.get(decodeURIComponent(noteMatch[1]!));
           if (!result) {
-            error(response, 404, 'Note not found');
+            reject(request, response, 404, 'Note not found');
             return;
           }
           json(response, 200, {
@@ -981,32 +998,32 @@ export async function startUiServer(options: UiServerOptions): Promise<UiServer>
           request.on('close', () => clients.delete(response));
           return;
         }
-        error(response, 404, 'Unknown API route');
+        reject(request, response, 404, 'Unknown API route');
         return;
       }
 
       if (method !== 'GET' && method !== 'HEAD') {
-        error(response, 405, 'Method not allowed');
+        reject(request, response, 405, 'Method not allowed');
         return;
       }
 
       const privateAsset = PRIVATE_ASSETS.get(pathname);
       if (!privateAsset) {
-        error(response, 404, 'Not found');
+        reject(request, response, 404, 'Not found');
         return;
       }
       serveAsset(request, response, webRoot, privateAsset);
     } catch (caught) {
       const message = caught instanceof Error ? caught.message : 'Unexpected error';
       if (message.includes('too large')) {
-        error(response, 413, message);
+        reject(request, response, 413, message);
         return;
       }
       if (/not found/i.test(message)) {
-        error(response, 404, message);
+        reject(request, response, 404, message);
         return;
       }
-      error(response, 400, message);
+      reject(request, response, 400, message);
     }
   });
 
@@ -1071,7 +1088,7 @@ function serveAsset(
 ): void {
   const file = path.resolve(webRoot, relative);
   if (!file.startsWith(path.resolve(webRoot) + path.sep)) {
-    error(response, 403, 'Forbidden');
+    reject(request, response, 403, 'Forbidden');
     return;
   }
   let cached = assetCache.get(file);
@@ -1085,7 +1102,7 @@ function serveAsset(
       assetCache.set(file, cached);
     }
   } catch {
-    error(response, 404, 'UI assets not found. Run from the Cairn package directory or reinstall.');
+    reject(request, response, 404, 'UI assets not found. Run from the Cairn package directory or reinstall.');
     return;
   }
 
