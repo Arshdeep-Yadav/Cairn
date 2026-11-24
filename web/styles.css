@@ -837,7 +837,7 @@ body.modal-open { overflow: hidden; }
 .connect-panel .panel-head .chip { margin-left: auto; }
 .connect-panel .chip .icon { width: 13px; height: 13px; }
 .connect-cmd {
-  display: flex; align-items: center; gap: 12px; width: 100%;
+  display: flex; align-items: center; gap: 12px; width: auto;
   margin-top: 11px; padding: 11px 13px;
   border: 1px solid var(--line); border-radius: var(--radius-sm);
   background: var(--wash); color: var(--ink-2); text-align: left; cursor: pointer;
@@ -923,6 +923,15 @@ body.modal-open { overflow: hidden; }
 .setup-command-panel { margin-bottom: 20px; }
 .setup-command-panel .chip .icon { width: 13px; height: 13px; }
 .setup-hint { margin-top: 10px; }
+
+/* Panel heads are inset by 18px; their sibling content must line up with them. */
+.setup-command-panel > .connect-cmd,
+.setup-command-panel > .setup-hint,
+.connect-panel > .connect-cmd,
+.connect-panel > .connect-foot,
+.setup-lower .panel > .setup-kinds,
+.setup-lower .panel > .setup-hooks,
+.setup-lower .panel > .setup-hint { margin-inline: 18px; }
 .setup-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 12px; }
 .setup-card {
   display: flex; flex-direction: column; gap: 8px;
