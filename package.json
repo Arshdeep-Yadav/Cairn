@@ -17,6 +17,7 @@
     "install.sh",
     "install.ps1",
     "README.md",
+    "SECURITY.md",
     "LICENSE"
   ],
   "scripts": {

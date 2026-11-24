@@ -265,6 +265,8 @@ See [docs/cloud-deployment.md](docs/cloud-deployment.md) for full deployment gui
 
 ## Security Posture
 
+Found a vulnerability? Report it privately using the [security policy](SECURITY.md) — please do not open a public issue.
+
 - 🛡️ **Salted Scrypt Password Hashing**: Passwords are never stored in plaintext. They are scrypt-hashed with per-vault salts and dynamic timing attack protections.
 - 🍪 **Hardened Session Cookies**: Signed `HttpOnly`, `SameSite=Strict`, 12-hour session tokens with in-memory server session invalidation and instantaneous revocation via **Lock workspace**.
 - 🔒 **CSRF & Origin Protections**: Double-submit CSRF token validation on all mutations, strict `Origin` and `Sec-Fetch-Site` validation, and host allowlist enforcement defeating DNS rebinding.
